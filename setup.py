@@ -14,5 +14,5 @@ setuptools.setup(
     url='https://github.com/mdoesburg/spotlight',
     license='MIT',
     packages=setuptools.find_packages(),
-    install_requires=['SQLAlchemy>=1.3.1']
+    install_requires=[]
 )
