@@ -13,11 +13,6 @@ Laravel style input validation for Python.
   * [Overwriting Messages](#overwriting-messages)
   * [Custom Rules](#custom-rules)
 
-## Dependencies
-* [python >= 3.6.0](https://www.python.org/)
-* [SQLAlchemy >= 1.3.1](https://pypi.org/project/SQLAlchemy/) (optional)
-  * Only needed if you want to use the database dependent rules: unique and exists.
-
 ## Installation
 Spotlight can be installed via pip:
 
@@ -25,8 +20,13 @@ Spotlight can be installed via pip:
 pip install spotlight
 ```
 
+## Dependencies
+* [python >= 3.6.0](https://www.python.org/)
+* [SQLAlchemy >= 1.3.1](https://pypi.org/project/SQLAlchemy/) (optional)
+  * Only needed if you want to use the database dependent rules: unique and exists.
+
 ## Usage
-```
+```python
 from spotlight.validator import Validator
 ```
 
@@ -112,6 +112,7 @@ Available methods:
 * [string](#string)
 * [integer](#integer)
 * [boolean](#boolean)
+* [list](#list)
 * [json](#json)
 * [uuid4](#uuid4)
 * [accepted](#accepted)
