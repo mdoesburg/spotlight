@@ -1,5 +1,6 @@
 import ipaddress
 import json
+import re
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -206,10 +207,16 @@ class UrlRule(Rule):
 
     @staticmethod
     def valid_url(url) -> bool:
-        if not StringRule.valid_string(url):
-            return False
-
-        return url.startswith("http://") or url.startswith("https://")
+        regex = re.compile(
+            r"^(?:http|ftp)s?://"  # http:// or https://
+            r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+            r"localhost|"  # localhost...
+            r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+            r"(?::\d+)?"  # optional port
+            r"(?:/?|[/?]\S+)$",
+            re.IGNORECASE
+        )
+        return regex_match(regex, url)
 
 
 class IpRule(Rule):

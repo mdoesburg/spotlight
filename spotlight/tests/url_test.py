@@ -25,11 +25,21 @@ class UrlTest(ValidatorTest):
     def test_url_rule_with_valid_urls_expect_no_errors(self):
         rules = {
             "url1": "url",
-            "url2": "url"
+            "url2": "url",
+            "url3": "url",
+            "url4": "url",
+            "url5": "url",
+            "url6": "url",
+            "url7": "url"
         }
         input_values = {
             "url1": "http://google.com",
-            "url2": "https://google.com"
+            "url2": "https://google.com",
+            "url3": "http://www.google.com",
+            "url4": "http://localhost",
+            "url5": "http://localhost:8080",
+            "url6": "http://localhost:8080/test/",
+            "url7": "http://test.dev/test/"
         }
         expected = None
 
