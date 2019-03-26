@@ -412,6 +412,25 @@ class BooleanRule(Rule):
         return type(boolean) is bool
 
 
+class ListRule(Rule):
+    """Valid list"""
+    def __init__(self):
+        super().__init__()
+        self.name = "list"
+
+    def passes(self, field, value) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_list(value)
+
+    def message(self) -> str:
+        return errors.LIST_ERROR
+
+    @staticmethod
+    def valid_list(value) -> bool:
+        return type(value) is list
+
+
 class Uuid4Rule(Rule):
     """Valid uuid4"""
     def __init__(self):

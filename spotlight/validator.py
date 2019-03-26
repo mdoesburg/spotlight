@@ -44,6 +44,7 @@ class Validator:
             rls.StringRule(),
             rls.IntegerRule(),
             rls.BooleanRule(),
+            rls.ListRule(),
             rls.Uuid4Rule(),
             rls.UniqueRule(self._session),
             rls.ExistsRule(self._session),
@@ -282,3 +283,7 @@ class Validator:
     @staticmethod
     def valid_alpha_num_space(value) -> bool:
         return rls.AlphaNumSpaceRule.valid_alpha_num_space(value)
+
+    @staticmethod
+    def valid_list(value) -> bool:
+        return rls.ListRule.valid_list(value)
