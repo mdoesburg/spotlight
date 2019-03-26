@@ -16,4 +16,4 @@ class CombinationTest(ValidatorTest):
         errs = errors.get(field)
 
         self.assertEqual(errs[0], err.INVALID_EMAIL_ERROR.format(field=field))
-        self.assertEqual(errs[1], err.MIN_ERROR.format(field=field, min=5))
+        self.assertEqual(errs[1], err.MIN_STRING_ERROR.format(field=field, min=5))

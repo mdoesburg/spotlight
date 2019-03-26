@@ -87,7 +87,7 @@ class CustomMessageTest(ValidatorTest):
             "test": "custom"
         }
         self.validator.fields = fields
-        expected = err.MIN_ERROR.format(field="custom", min=5)
+        expected = err.MIN_STRING_ERROR.format(field="custom", min=5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("test")

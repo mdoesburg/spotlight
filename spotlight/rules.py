@@ -249,20 +249,26 @@ class MinRule(DependentRule):
     def __init__(self):
         super().__init__()
         self.name = "min"
+        self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
         _min = int(rule_values[0])
         self.message_fields = dict(field=field, min=_min)
 
-        if StringRule.valid_string(value) or type(value) is list:
+        if StringRule.valid_string(value):
+            self.error = errors.MIN_STRING_ERROR
+            return len(value) >= _min
+        elif type(value) is list:
+            self.error = errors.MIN_LIST_ERROR
             return len(value) >= _min
         elif IntegerRule.valid_integer(value):
+            self.error = errors.MIN_INTEGER_ERROR
             return value >= _min
 
         return False
 
     def message(self) -> str:
-        return errors.MIN_ERROR
+        return self.error
 
 
 class MaxRule(DependentRule):
@@ -270,20 +276,26 @@ class MaxRule(DependentRule):
     def __init__(self):
         super().__init__()
         self.name = "max"
+        self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
         _max = int(rule_values[0])
         self.message_fields = dict(field=field, max=_max)
 
-        if StringRule.valid_string(value) or type(value) is list:
+        if StringRule.valid_string(value):
+            self.error = errors.MAX_STRING_ERROR
+            return len(value) <= _max
+        elif type(value) is list:
+            self.error = errors.MAX_LIST_ERROR
             return len(value) <= _max
         elif IntegerRule.valid_integer(value):
+            self.error = errors.MAX_INTEGER_ERROR
             return value <= _max
 
         return False
 
     def message(self) -> str:
-        return errors.MAX_ERROR
+        return self.error
 
 
 class InRule(DependentRule):
