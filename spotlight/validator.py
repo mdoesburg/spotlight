@@ -44,11 +44,12 @@ class Validator:
             rls.StringRule(),
             rls.IntegerRule(),
             rls.BooleanRule(),
+            rls.JsonRule(),
             rls.ListRule(),
             rls.Uuid4Rule(),
+            rls.AcceptedRule(),
             rls.UniqueRule(self._session),
-            rls.ExistsRule(self._session),
-            rls.JsonRule()
+            rls.ExistsRule(self._session)
         ]
         self._available_rules = {}
 

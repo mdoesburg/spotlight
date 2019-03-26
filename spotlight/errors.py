@@ -34,6 +34,7 @@ BOOLEAN_ERROR = "The {field} field must be a boolean."
 UUID4_ERROR = "The {field} field must be a valid UUID."
 JSON_ERROR = "The {field} field must be a valid JSON string."
 LIST_ERROR = "The {field} field must be a list."
+ACCEPTED_ERROR = "The {field} field must be accepted."
 
 UNIQUE_ERROR = "A record with this {field} already exists."
 EXISTS_ERROR = "A record with this {field} does not exists."

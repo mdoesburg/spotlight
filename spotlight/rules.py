@@ -585,3 +585,19 @@ class JsonRule(Rule):
             return True
         except:
             return False
+
+
+class AcceptedRule(Rule):
+    """The field must be yes, on, 1, or true"""
+    def __init__(self):
+        super().__init__()
+        self.name = "accepted"
+
+    def passes(self, field, value) -> bool:
+        accepted_values = ["yes", "on", 1, True]
+        self.message_fields = dict(field=field)
+
+        return value in accepted_values
+
+    def message(self) -> str:
+        return errors.ACCEPTED_ERROR
