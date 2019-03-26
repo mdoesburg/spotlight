@@ -1,13 +1,19 @@
 from typing import Union, List
 
-from sqlalchemy.orm import Session
-
 from spotlight import errors as err
 from spotlight import rules as rls
 
 
 class Validator:
-    def __init__(self, session: Session = None):
+    """
+    Creates an instance of the Validator class.
+
+    Parameters
+    ----------
+    session : Session (optional)
+        SQLAlchemy Session instance, used for database rules: unique & exists.
+    """
+    def __init__(self, session=None):
         self._session = session
         self._session_required_rules = ["unique", "exists"]
         self._implicit_rules = []
@@ -15,13 +21,12 @@ class Validator:
         self._rules = None
         self._input = None
         self._errors = {}
-        self._stop = False
 
         self.messages = {}
         self.fields = {}
         self.values = {}
 
-        self.custom_rules: List[rls.BaseRule] = [
+        self._registered_rules: List[rls.BaseRule] = [
             rls.RequiredRule(),
             rls.RequiredWithoutRule(),
             rls.RequiredWithRule(),
@@ -41,39 +46,63 @@ class Validator:
             rls.BooleanRule(),
             rls.Uuid4Rule(),
             rls.UniqueRule(self._session),
-            rls.ExistsRule(self._session)
+            rls.ExistsRule(self._session),
+            rls.JsonRule()
         ]
+        self._available_rules = {}
 
-        self._setup_custom_rules()
+        self._setup_initial_rules()
 
-    def _setup_custom_rules(self):
-        for r in self.custom_rules:
-            if r.implicit:
-                self._implicit_rules.append(r.name)
+    def _setup_initial_rules(self):
+        for rule in self._registered_rules:
+            self._setup_rule(rule)
 
-    def _custom_rules(self):
-        custom_rules = {}
-        for r in self.custom_rules:
-            custom_rules[r.name] = r
-
-        return custom_rules
-
-    def register_custom_rule(self, rule: rls.BaseRule):
-        self.custom_rules.append(rule)
+    def _setup_rule(self, rule):
+        self._available_rules[rule.name] = rule
         if rule.implicit:
             self._implicit_rules.append(rule.name)
 
+    @staticmethod
+    def _dynamically_add_static_validation_methods(rule):
+        for attr in dir(rule):
+            if attr.startswith("valid_"):
+                validation_method = getattr(rule, attr)
+                setattr(Validator, attr, staticmethod(validation_method))
+
+    def register_rule(self, rule: rls.BaseRule):
+        self._setup_rule(rule)
+
     def validate(
             self,
-            input_values: Union[dict, object],
+            input_: Union[dict, object],
             rules: dict,
             flat: bool = False
     ) -> Union[dict, list]:
-        """Validate input with given rules"""
+        """
+        Validate input with given rules.
+
+        Parameters
+        ----------
+        input_ : Union[dict, object]
+            Dict or object with input that needs to be validated.
+            For example: {"email": "john.doe@example.com"},
+            Input(email="john.doe@example.com")
+        rules : Union[dict, object]
+            Dict with validation rules for given input.
+            For example: {"email": "required|email|unique:user,email"}
+        flat : bool (default=False)
+            Determines if a flat list of errors or a dict of errors should be
+            returned. For example: ["error1", "error2", "error3"] vs.
+            {"email": ["error1", "error2"], "password": ["error3"]}
+
+        Returns
+        ----------
+        errors: Union[dict, list] (default=dict)
+            Returns a dict or list of errors. Dependent on the flat flag.
+        """
         self._rules = rules
-        self._input = input_values
+        self._input = input_
         self._errors = {}
-        self._stop = False
 
         # Transform input to dictionary
         if not isinstance(self._input, dict):
@@ -86,45 +115,49 @@ class Validator:
             for rule in rules:
                 # Verify that rule isn't empty
                 if rule != "":
-                    # Split rule name and values
-                    rule_name, *values = rule.split(":")
-                    print(rule_name)
+                    # Split rule name and rule_values
+                    rule_name, *rule_values = rule.split(":")
+
                     # Check if session needs for rule
                     self._session_check(rule_name)
 
                     # Check if field is validatable
                     if self._is_validatable(rule_name, field):
                         # Check if rule exists
-                        if rule_name in self._custom_rules():
-                            r = self._custom_rules().get(rule_name)
+                        if rule_name in self._available_rules:
+                            matched_rule = self._available_rules.get(rule_name)
 
                             # Execute correct validation method
                             value = self._input.get(field)
-                            if isinstance(r, rls.Rule):
-                                passed = r.passes(field, value)
-                            elif isinstance(r, rls.InputDependentRule):
-                                passed = r.passes(field, value, self._input)
-                            elif isinstance(r, rls.DependentRule):
-                                passed = r.passes(field, values, self._input)
 
+                            # Rule
+                            if isinstance(matched_rule, rls.Rule):
+                                passed = matched_rule.passes(field, value)
+                            # Dependent Rule
+                            elif isinstance(matched_rule, rls.DependentRule):
+                                passed = matched_rule.passes(
+                                    field,
+                                    value,
+                                    rule_values,
+                                    self._input
+                                )
+
+                            # If rule didn't pass, add error
                             if not passed:
                                 self._add_error(
                                     rule_name,
                                     field,
-                                    r.message(),
-                                    r.message_fields
+                                    matched_rule.message(),
+                                    matched_rule.message_fields
                                 )
 
-                                if r.stop:
+                                # Stop validation
+                                if matched_rule.stop:
                                     break
                         else:
                             raise Exception(
                                 err.RULE_NOT_FOUND.format(rule=rule_name)
                             )
-
-                    # Stop validation
-                    if self._stop:
-                        break
 
         self._overwrite_errors()
 
@@ -191,9 +224,9 @@ class Validator:
     def _overwrite_values(self, field, fields):
         if field in self.values:
             value_overwrites = self.values.get(field)
-            for value_overwrite in value_overwrites:
-                if value_overwrite in fields:
-                    fields[value_overwrite] = value_overwrites.get(value_overwrite)
+            for overwrite in value_overwrites:
+                if overwrite in fields:
+                    fields[overwrite] = value_overwrites.get(overwrite)
 
     def _add_error(self, rule, field, error, fields=None):
         if field not in self._errors:
@@ -211,37 +244,41 @@ class Validator:
         return error.format(**fields)
 
     @staticmethod
-    def valid_email(email):
+    def valid_email(email) -> bool:
         return rls.EmailRule.valid_email(email)
 
     @staticmethod
-    def valid_url(url):
+    def valid_url(url) -> bool:
         return rls.UrlRule.valid_url(url)
 
     @staticmethod
-    def valid_ip(ip):
+    def valid_ip(ip) -> bool:
         return rls.IpRule.valid_ip(ip)
 
     @staticmethod
-    def valid_uuid4(uuid):
+    def valid_uuid4(uuid) -> bool:
         return rls.Uuid4Rule.valid_uuid4(uuid)
 
     @staticmethod
-    def valid_string(string):
+    def valid_string(string) -> bool:
         return rls.StringRule.valid_string(string)
 
     @staticmethod
-    def valid_integer(integer):
+    def valid_integer(integer) -> bool:
         return rls.IntegerRule.valid_integer(integer)
 
     @staticmethod
-    def valid_boolean(boolean):
+    def valid_boolean(boolean) -> bool:
         return rls.BooleanRule.valid_boolean(boolean)
 
     @staticmethod
-    def valid_alpha_num(value):
+    def valid_json(value) -> bool:
+        return rls.JsonRule.valid_json(value)
+
+    @staticmethod
+    def valid_alpha_num(value) -> bool:
         return rls.AlphaNumRule.valid_alpha_num(value)
 
     @staticmethod
-    def valid_alpha_num_space(value):
+    def valid_alpha_num_space(value) -> bool:
         return rls.AlphaNumSpaceRule.valid_alpha_num_space(value)

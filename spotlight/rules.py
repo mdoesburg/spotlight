@@ -1,4 +1,5 @@
 import ipaddress
+import json
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -24,43 +25,22 @@ class Rule(BaseRule):
         pass
 
 
-class InputDependentRule(BaseRule):
-    @abstractmethod
-    def passes(self, field, value, input_) -> bool:
-        pass
-
-
 class DependentRule(BaseRule):
     @abstractmethod
-    def passes(self, field, values, input_) -> bool:
+    def passes(self, field, value, rule_values, input_) -> bool:
         pass
 
 
-class DependentSessionRule(DependentRule):
+class SessionRule(BaseRule):
     def __init__(self, session):
         super().__init__()
         self._session = session
 
-    @abstractmethod
-    def passes(self, field, values, input_) -> bool:
+    def message(self) -> str:
         pass
 
 
-class UppercaseRule(Rule):
-    def __init__(self):
-        super().__init__()
-        self.name = "uppercase"
-
-    def passes(self, field, value) -> bool:
-        self.message_fields = dict(field=field)
-
-        return value.upper() == value
-
-    def message(self) -> str:
-        return "The {field} field must be uppercase."
-
-
-class RequiredRule(InputDependentRule):
+class RequiredRule(DependentRule):
     """Required field"""
     def __init__(self):
         super().__init__()
@@ -68,7 +48,7 @@ class RequiredRule(InputDependentRule):
         self.implicit = True
         self.stop = True
 
-    def passes(self, field, value, input_) -> bool:
+    def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
 
         return not missing(input_, field) and not empty(value)
@@ -85,8 +65,8 @@ class RequiredWithoutRule(DependentRule):
         self.implicit = True
         self.stop = True
 
-    def passes(self, field, values, input_) -> bool:
-        other = values[0]
+    def passes(self, field, value, rule_values, input_) -> bool:
+        other = rule_values[0]
         self.message_fields = dict(field=field, other=other)
 
         return not missing(input_, field) and missing(input_, other)
@@ -103,8 +83,8 @@ class RequiredWithRule(DependentRule):
         self.implicit = True
         self.stop = True
 
-    def passes(self, field, values, input_) -> bool:
-        other = values[0]
+    def passes(self, field, value, rule_values, input_) -> bool:
+        other = rule_values[0]
         self.message_fields = dict(
             field=field,
             other=other
@@ -127,8 +107,8 @@ class RequiredIfRule(DependentRule):
         self.implicit = True
         self.stop = True
 
-    def passes(self, field, values, input_) -> bool:
-        other, val = values[0].split(",")
+    def passes(self, field, value, rule_values, input_) -> bool:
+        other, val = rule_values[0].split(",")
         other_val = input_.get(other)
         self.message_fields = dict(
             field=field,
@@ -152,8 +132,8 @@ class NotWithRule(DependentRule):
         self.name = "not_with"
         self.stop = True
 
-    def passes(self, field, values, input_) -> bool:
-        other = values[0]
+    def passes(self, field, value, rule_values, input_) -> bool:
+        other = rule_values[0]
         self.message_fields = dict(
             field=field,
             other=other
@@ -168,7 +148,7 @@ class NotWithRule(DependentRule):
         return errors.NOT_WITH_ERROR
 
 
-class FilledRule(InputDependentRule):
+class FilledRule(DependentRule):
     """Not empty when present"""
     def __init__(self):
         super().__init__()
@@ -176,7 +156,7 @@ class FilledRule(InputDependentRule):
         self.implicit = True
         self.stop = True
 
-    def passes(self, field, value, input_) -> bool:
+    def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
 
         if field in input_ and empty(value):
@@ -203,7 +183,7 @@ class EmailRule(Rule):
         return errors.INVALID_EMAIL_ERROR
 
     @staticmethod
-    def valid_email(email):
+    def valid_email(email) -> bool:
         return regex_match(
             r"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
             email
@@ -225,7 +205,7 @@ class UrlRule(Rule):
         return errors.INVALID_URL_ERROR
 
     @staticmethod
-    def valid_url(url):
+    def valid_url(url) -> bool:
         if not StringRule.valid_string(url):
             return False
 
@@ -247,7 +227,7 @@ class IpRule(Rule):
         return errors.INVALID_IP_ERROR
 
     @staticmethod
-    def valid_ip(ip):
+    def valid_ip(ip) -> bool:
         if not StringRule.valid_string(ip) and not IntegerRule.valid_integer(ip):
             return False
         try:
@@ -263,9 +243,8 @@ class MinRule(DependentRule):
         super().__init__()
         self.name = "min"
 
-    def passes(self, field, values, input_) -> bool:
-        _min = int(values[0])
-        value = input_.get(field)
+    def passes(self, field, value, rule_values, input_) -> bool:
+        _min = int(rule_values[0])
         self.message_fields = dict(field=field, min=_min)
 
         if StringRule.valid_string(value) or type(value) is list:
@@ -285,9 +264,8 @@ class MaxRule(DependentRule):
         super().__init__()
         self.name = "max"
 
-    def passes(self, field, values, input_) -> bool:
-        _max = int(values[0])
-        value = input_.get(field)
+    def passes(self, field, value, rule_values, input_) -> bool:
+        _max = int(rule_values[0])
         self.message_fields = dict(field=field, max=_max)
 
         if StringRule.valid_string(value) or type(value) is list:
@@ -310,11 +288,11 @@ class InRule(DependentRule):
         super().__init__()
         self.name = "in"
 
-    def passes(self, field, values, input_) -> bool:
-        _values = values[0].split(",")
-        self.message_fields = dict(field=field, values=", ".join(_values))
+    def passes(self, field, value, rule_values, input_) -> bool:
+        _rule_values = rule_values[0].split(",")
+        self.message_fields = dict(field=field, values=", ".join(_rule_values))
 
-        return input_.get(field) in _values
+        return value in _rule_values
 
     def message(self) -> str:
         return errors.IN_ERROR
@@ -335,7 +313,7 @@ class AlphaNumRule(Rule):
         return errors.ALPHA_NUM_ERROR
 
     @staticmethod
-    def valid_alpha_num(value):
+    def valid_alpha_num(value) -> bool:
         return regex_match(r"^[a-zA-Z0-9]+$", value)
 
 
@@ -354,7 +332,7 @@ class AlphaNumSpaceRule(Rule):
         return errors.ALPHA_NUM_SPACE_ERROR
 
     @staticmethod
-    def valid_alpha_num_space(value):
+    def valid_alpha_num_space(value) -> bool:
         return regex_match(r"^[a-zA-Z0-9 ]+$", value)
 
 
@@ -373,7 +351,7 @@ class StringRule(Rule):
         return errors.STRING_ERROR
 
     @staticmethod
-    def valid_string(string):
+    def valid_string(string) -> bool:
         return type(string) is str
 
 
@@ -392,7 +370,7 @@ class IntegerRule(Rule):
         return errors.INTEGER_ERROR
 
     @staticmethod
-    def valid_integer(integer):
+    def valid_integer(integer) -> bool:
         return type(integer) is int
 
 
@@ -411,7 +389,7 @@ class BooleanRule(Rule):
         return errors.BOOLEAN_ERROR
 
     @staticmethod
-    def valid_boolean(boolean):
+    def valid_boolean(boolean) -> bool:
         return type(boolean) is bool
 
 
@@ -430,7 +408,7 @@ class Uuid4Rule(Rule):
         return errors.UUID4_ERROR
 
     @staticmethod
-    def valid_uuid4(uuid):
+    def valid_uuid4(uuid) -> bool:
         if type(uuid) is UUID:
             uuid = str(uuid)
         try:
@@ -441,15 +419,15 @@ class Uuid4Rule(Rule):
         return str(val) == uuid
 
 
-class UniqueRule(DependentSessionRule):
+class UniqueRule(DependentRule, SessionRule):
     """Unique database record"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, session):
+        super().__init__(session)
         self.name = "unique"
 
-    def passes(self, field, values, input_) -> bool:
+    def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
-        table, column, *extra = values[0].split(",")
+        table, column, *extra = rule_values[0].split(",")
 
         ignore_col = extra[0] if len(extra) > 0 else None
         ignore_val = extra[1] if len(extra) > 1 else None
@@ -457,7 +435,7 @@ class UniqueRule(DependentSessionRule):
         where_val = extra[3] if len(extra) > 3 else None
 
         exists = self._unique_check(
-            input_,
+            value,
             table,
             column,
             ignore_col,
@@ -473,7 +451,7 @@ class UniqueRule(DependentSessionRule):
 
     def _unique_check(
         self,
-        input_,
+        value,
         table,
         column,
         ignore_col=None,
@@ -484,7 +462,7 @@ class UniqueRule(DependentSessionRule):
         # Create query
         query = "SELECT * FROM {} WHERE {} = :value1".format(table, column)
         params = {
-            "value1": input_.get(column)
+            "value1": value
         }
 
         # If ignore values are set
@@ -503,15 +481,15 @@ class UniqueRule(DependentSessionRule):
         return result
 
 
-class ExistsRule(DependentSessionRule):
+class ExistsRule(DependentRule, SessionRule):
     """Exists in database"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, session):
+        super().__init__(session)
         self.name = "exists"
         self.error = None
 
-    def passes(self, field, values, input_) -> bool:
-        table, column, *extra = values[0].split(",")
+    def passes(self, field, value, rule_values, input_) -> bool:
+        table, column, *extra = rule_values[0].split(",")
 
         # Check if extra where is set
         if extra:
@@ -525,7 +503,7 @@ class ExistsRule(DependentSessionRule):
                 "AND {} = :value2".format(table, column, where_col)
             )
             params = {
-                "value1": input_.get(field),
+                "value1": value,
                 "value2": where_val
             }
             exists = self._session.execute(query, params).first()
@@ -538,7 +516,7 @@ class ExistsRule(DependentSessionRule):
                 column
             )
             params = {
-                "value1": input_.get(field)
+                "value1": value
             }
             exists = self._session.execute(query, params).first()
 
@@ -546,3 +524,26 @@ class ExistsRule(DependentSessionRule):
 
     def message(self) -> str:
         return self.error
+
+
+class JsonRule(Rule):
+    """Valid json"""
+    def __init__(self):
+        super().__init__()
+        self.name = "json"
+
+    def passes(self, field, value) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_json(value)
+
+    def message(self) -> str:
+        return errors.JSON_ERROR
+
+    @staticmethod
+    def valid_json(value) -> bool:
+        try:
+            json.loads(value)
+            return True
+        except:
+            return False
