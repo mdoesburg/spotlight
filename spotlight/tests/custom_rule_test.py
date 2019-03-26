@@ -1,5 +1,4 @@
 from spotlight.tests.validator_test import ValidatorTest
-from spotlight.rules import UppercaseRule
 from spotlight.rules import Rule
 
 
@@ -17,6 +16,20 @@ class ExactlyFiveCharsRule(Rule):
         return "The {field} field has to be exactly 5 chars long {name}!"
 
 
+class UppercaseRule(Rule):
+    def __init__(self):
+        super().__init__()
+        self.name = "uppercase"
+
+    def passes(self, field, value) -> bool:
+        self.message_fields = dict(field=field)
+
+        return value.upper() == value
+
+    def message(self) -> str:
+        return "The {field} field must be uppercase."
+
+
 class CustomRuleTest(ValidatorTest):
     def setUp(self):
         self.validator.fields = {}
@@ -32,7 +45,7 @@ class CustomRuleTest(ValidatorTest):
         expected = "The test field must be uppercase."
 
         rule = UppercaseRule()
-        self.validator.register_custom_rule(rule)
+        self.validator.register_rule(rule)
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(field)
 
@@ -54,7 +67,7 @@ class CustomRuleTest(ValidatorTest):
         expected = rule.message().format(field=field, name="lol")
 
         self.validator.fields = fields
-        self.validator.register_custom_rule(rule)
+        self.validator.register_rule(rule)
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(field)
 
