@@ -9,8 +9,9 @@ from spotlight.utils import missing, equals, empty, regex_match
 
 
 class BaseRule(ABC):
+    name = None
+
     def __init__(self):
-        self.name = None
         self.implicit = False
         self.stop = False
         self.message_fields = {}
@@ -43,9 +44,10 @@ class SessionRule(BaseRule):
 
 class RequiredRule(DependentRule):
     """Required field"""
+    name = "required"
+
     def __init__(self):
         super().__init__()
-        self.name = "required"
         self.implicit = True
         self.stop = True
 
@@ -60,9 +62,10 @@ class RequiredRule(DependentRule):
 
 class RequiredWithoutRule(DependentRule):
     """Required if other field is not present"""
+    name = "required_without"
+
     def __init__(self):
         super().__init__()
-        self.name = "required_without"
         self.implicit = True
         self.stop = True
 
@@ -78,9 +81,10 @@ class RequiredWithoutRule(DependentRule):
 
 class RequiredWithRule(DependentRule):
     """Required with other field"""
+    name = "required_with"
+
     def __init__(self):
         super().__init__()
-        self.name = "required_with"
         self.implicit = True
         self.stop = True
 
@@ -102,9 +106,10 @@ class RequiredWithRule(DependentRule):
 
 class RequiredIfRule(DependentRule):
     """Required if other field equals certain value"""
+    name = "required_if"
+
     def __init__(self):
         super().__init__()
-        self.name = "required_if"
         self.implicit = True
         self.stop = True
 
@@ -128,9 +133,10 @@ class RequiredIfRule(DependentRule):
 
 class NotWithRule(DependentRule):
     """Not with other field"""
+    name = "not_with"
+
     def __init__(self):
         super().__init__()
-        self.name = "not_with"
         self.stop = True
 
     def passes(self, field, value, rule_values, input_) -> bool:
@@ -151,9 +157,10 @@ class NotWithRule(DependentRule):
 
 class FilledRule(DependentRule):
     """Not empty when present"""
+    name = "filled"
+
     def __init__(self):
         super().__init__()
-        self.name = "filled"
         self.implicit = True
         self.stop = True
 
@@ -171,9 +178,7 @@ class FilledRule(DependentRule):
 
 class EmailRule(Rule):
     """Valid email"""
-    def __init__(self):
-        super().__init__()
-        self.name = "email"
+    name = "email"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -193,9 +198,7 @@ class EmailRule(Rule):
 
 class UrlRule(Rule):
     """Valid URL"""
-    def __init__(self):
-        super().__init__()
-        self.name = "url"
+    name = "url"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -221,9 +224,7 @@ class UrlRule(Rule):
 
 class IpRule(Rule):
     """Valid IP"""
-    def __init__(self):
-        super().__init__()
-        self.name = "ip"
+    name = "ip"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -246,9 +247,10 @@ class IpRule(Rule):
 
 class MinRule(DependentRule):
     """Min length"""
+    name = "min"
+
     def __init__(self):
         super().__init__()
-        self.name = "min"
         self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
@@ -273,9 +275,10 @@ class MinRule(DependentRule):
 
 class MaxRule(DependentRule):
     """Max length"""
+    name = "max"
+
     def __init__(self):
         super().__init__()
-        self.name = "max"
         self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
@@ -303,9 +306,7 @@ class InRule(DependentRule):
         In: The field under validation must be included in the given list
         of values
     """
-    def __init__(self):
-        super().__init__()
-        self.name = "in"
+    name = "in"
 
     def passes(self, field, value, rule_values, input_) -> bool:
         _rule_values = rule_values[0].split(",")
@@ -319,9 +320,7 @@ class InRule(DependentRule):
 
 class AlphaNumRule(Rule):
     """Only letters and numbers"""
-    def __init__(self):
-        super().__init__()
-        self.name = "alpha_num"
+    name = "alpha_num"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -338,9 +337,7 @@ class AlphaNumRule(Rule):
 
 class AlphaNumSpaceRule(Rule):
     """Only letters, numbers and spaces"""
-    def __init__(self):
-        super().__init__()
-        self.name = "alpha_num_space"
+    name = "alpha_num_space"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -357,9 +354,7 @@ class AlphaNumSpaceRule(Rule):
 
 class StringRule(Rule):
     """Valid string"""
-    def __init__(self):
-        super().__init__()
-        self.name = "string"
+    name = "string"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -376,9 +371,7 @@ class StringRule(Rule):
 
 class IntegerRule(Rule):
     """Valid integer"""
-    def __init__(self):
-        super().__init__()
-        self.name = "integer"
+    name = "integer"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -395,9 +388,7 @@ class IntegerRule(Rule):
 
 class BooleanRule(Rule):
     """Valid boolean"""
-    def __init__(self):
-        super().__init__()
-        self.name = "boolean"
+    name = "boolean"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -414,9 +405,7 @@ class BooleanRule(Rule):
 
 class ListRule(Rule):
     """Valid list"""
-    def __init__(self):
-        super().__init__()
-        self.name = "list"
+    name = "list"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -433,9 +422,7 @@ class ListRule(Rule):
 
 class Uuid4Rule(Rule):
     """Valid uuid4"""
-    def __init__(self):
-        super().__init__()
-        self.name = "uuid4"
+    name = "uuid4"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -459,9 +446,7 @@ class Uuid4Rule(Rule):
 
 class UniqueRule(DependentRule, SessionRule):
     """Unique database record"""
-    def __init__(self, session):
-        super().__init__(session)
-        self.name = "unique"
+    name = "unique"
 
     def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
@@ -521,9 +506,10 @@ class UniqueRule(DependentRule, SessionRule):
 
 class ExistsRule(DependentRule, SessionRule):
     """Exists in database"""
+    name = "exists"
+
     def __init__(self, session):
         super().__init__(session)
-        self.name = "exists"
         self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
@@ -566,9 +552,7 @@ class ExistsRule(DependentRule, SessionRule):
 
 class JsonRule(Rule):
     """Valid json"""
-    def __init__(self):
-        super().__init__()
-        self.name = "json"
+    name = "json"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
@@ -589,9 +573,7 @@ class JsonRule(Rule):
 
 class AcceptedRule(Rule):
     """The field must be yes, on, 1, or true"""
-    def __init__(self):
-        super().__init__()
-        self.name = "accepted"
+    name = "accepted"
 
     def passes(self, field, value) -> bool:
         accepted_values = ["yes", "on", 1, True]
