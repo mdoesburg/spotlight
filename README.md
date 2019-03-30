@@ -6,7 +6,6 @@ Laravel style input validation for Python.
 * [Dependencies](#dependencies)
 * [Usage](#usage)
   * [Simple Input Examples](#simple-input-examples)
-  * [Database Rule Examples](#database-rule-examples)
   * [Direct Validation](#direct-validation)
 * [Available Rules](#available-rules)
 * [Advanced Usage](#advanced-usage)
@@ -22,8 +21,6 @@ pip install spotlight
 
 ## Dependencies
 * [python >= 3.6.0](https://www.python.org/)
-* [SQLAlchemy >= 1.3.1](https://pypi.org/project/SQLAlchemy/) (optional)
-  * Only needed if you want to use the database dependent rules: unique and exists.
 
 ## Usage
 ```python
@@ -44,22 +41,6 @@ input_ = {
     "first_name": "John",
     "last_name": "Doe",
     "password": "test1234"
-}
-
-validator = Validator()
-errors = validator.validate(input_, rules)
-```
-
-### Database Rule Examples
-```python
-rules = {
-    "id": "exists:user,id",
-    "email": "unique:user,email"
-}
-
-input_ = {
-    "id": 1,
-    "email": "john.doe@example.com"
 }
 
 validator = Validator()
@@ -116,8 +97,6 @@ Available methods:
 * [json](#json)
 * [uuid4](#uuid4)
 * [accepted](#accepted)
-* [unique (database)](#unique-database)
-* [exists (database)](#exists-database)
 
 ### required
 The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
@@ -246,30 +225,6 @@ uuid4
 The field under validation must be yes, on, 1, or true. This is useful for validating "Terms of Service" acceptance.
 ```
 accepted
-```
-
-### unique (database)
-The field under validation must be unique in a given database table. The last 4 fields (ignore column, ignore value, where column, where value) are optional.
-```
-unique:table,column
-```
-```
-unique:table,column,ignoreColumn,ignoreValue
-```
-```
-unique:table,column,ignoreColumn,ignoreValue,whereColumn,whereValue
-```
-```
-unique:table,column,null,null,whereColumn,whereValue
-```
-
-### exists (database)
-The field under validation must exist on a given database table. The last 2 fields (where column, where value) are optional.
-```
-exists:table,column
-```
-```
-exists:table,column,whereColumn,whereValue
 ```
 
 ## Advanced Usage
