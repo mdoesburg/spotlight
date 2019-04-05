@@ -5,18 +5,15 @@ from spotlight import rules as rls
 
 
 class Validator:
+    class Plugin:
+        def rules(self) -> List[rls.BaseRule]:
+            return []
+
     """
     Creates an instance of the Validator class.
-
-    Parameters
-    ----------
-    session : Session (optional)
-        SQLAlchemy Session instance, used for database rules: unique & exists.
     """
-    def __init__(self, session=None):
-        self._session = session
-        self._session_required_rules = ["unique", "exists"]
-        self._implicit_rules = []
+
+    def __init__(self, plugins: List[Plugin] = None):
 
         self._rules = None
         self._input = None
@@ -26,7 +23,19 @@ class Validator:
         self.fields = {}
         self.values = {}
 
-        self._registered_rules: List[rls.BaseRule] = [
+        self._implicit_rules = []
+        self._registered_rules = []
+        self._available_rules = {}
+
+        self._setup_default_rules()
+        self._setup_plugins(plugins or [])
+
+    def _setup_default_rules(self):
+        self.register_rules(self._default_rules())
+
+    @staticmethod
+    def _default_rules() -> List[rls.BaseRule]:
+        return [
             rls.RequiredRule(),
             rls.RequiredWithoutRule(),
             rls.RequiredWithRule(),
@@ -48,16 +57,7 @@ class Validator:
             rls.ListRule(),
             rls.Uuid4Rule(),
             rls.AcceptedRule(),
-            rls.UniqueRule(self._session),
-            rls.ExistsRule(self._session)
         ]
-        self._available_rules = {}
-
-        self._setup_initial_rules()
-
-    def _setup_initial_rules(self):
-        for rule in self._registered_rules:
-            self._setup_rule(rule)
 
     def _setup_rule(self, rule):
         self._available_rules[rule.name] = rule
@@ -71,14 +71,16 @@ class Validator:
                 validation_method = getattr(rule, attr)
                 setattr(Validator, attr, staticmethod(validation_method))
 
+    def register_rules(self, rules: [rls.BaseRule]):
+        for rule in rules:
+            self.register_rule(rule)
+
     def register_rule(self, rule: rls.BaseRule):
+        self._registered_rules.append(rule)
         self._setup_rule(rule)
 
     def validate(
-            self,
-            input_: Union[dict, object],
-            rules: dict,
-            flat: bool = False
+        self, input_: Union[dict, object], rules: dict, flat: bool = False
     ) -> Union[dict, list]:
         """
         Validate input with given rules.
@@ -120,9 +122,6 @@ class Validator:
                     # Split rule name and rule_values
                     rule_name, *rule_values = rule.split(":")
 
-                    # Check if session needs for rule
-                    self._session_check(rule_name)
-
                     # Check if field is validatable
                     if self._is_validatable(rule_name, field):
                         # Check if rule exists
@@ -138,10 +137,7 @@ class Validator:
                             # Dependent Rule
                             elif isinstance(matched_rule, rls.DependentRule):
                                 passed = matched_rule.passes(
-                                    field,
-                                    value,
-                                    rule_values,
-                                    self._input
+                                    field, value, rule_values, self._input
                                 )
 
                             # If rule didn't pass, add error
@@ -150,16 +146,14 @@ class Validator:
                                     rule_name,
                                     field,
                                     matched_rule.message(),
-                                    matched_rule.message_fields
+                                    matched_rule.message_fields,
                                 )
 
                                 # Stop validation
                                 if matched_rule.stop:
                                     break
                         else:
-                            raise Exception(
-                                err.RULE_NOT_FOUND.format(rule=rule_name)
-                            )
+                            raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
         self._overwrite_errors()
 
@@ -188,17 +182,6 @@ class Validator:
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
 
-    def _session_check(self, rule_name):
-        if self._rule_requires_session(rule_name):
-            raise Exception(
-                err.NO_SESSION_ERROR.format(rule=rule_name)
-            )
-
-    def _rule_requires_session(self, rule_name):
-        return (
-            rule_name in self._session_required_rules and self._session is None
-        )
-
     def _overwrite_error(self, field, rule):
         subfield = field + "." + rule
         if subfield in self.messages:
@@ -211,9 +194,7 @@ class Validator:
             if field in self._errors and "." not in field:
                 new_error = self.messages.get(field)
                 formatted_error = self._format_error(
-                    new_error,
-                    field,
-                    dict(field=field)
+                    new_error, field, dict(field=field)
                 )
                 self._errors[field] = [formatted_error]
 
@@ -288,3 +269,7 @@ class Validator:
     @staticmethod
     def valid_list(value) -> bool:
         return rls.ListRule.valid_list(value)
+
+    def _setup_plugins(self, plugins: List[Plugin]):
+        for plugin in plugins:
+            self.register_rules(plugin.rules())

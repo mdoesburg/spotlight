@@ -33,17 +33,9 @@ class DependentRule(BaseRule):
         pass
 
 
-class SessionRule(BaseRule):
-    def __init__(self, session):
-        super().__init__()
-        self._session = session
-
-    def message(self) -> str:
-        pass
-
-
 class RequiredRule(DependentRule):
     """Required field"""
+
     name = "required"
 
     def __init__(self):
@@ -62,6 +54,7 @@ class RequiredRule(DependentRule):
 
 class RequiredWithoutRule(DependentRule):
     """Required if other field is not present"""
+
     name = "required_without"
 
     def __init__(self):
@@ -81,6 +74,7 @@ class RequiredWithoutRule(DependentRule):
 
 class RequiredWithRule(DependentRule):
     """Required with other field"""
+
     name = "required_with"
 
     def __init__(self):
@@ -90,10 +84,7 @@ class RequiredWithRule(DependentRule):
 
     def passes(self, field, value, rule_values, input_) -> bool:
         other = rule_values[0]
-        self.message_fields = dict(
-            field=field,
-            other=other
-        )
+        self.message_fields = dict(field=field, other=other)
 
         if missing(input_, field) and input_.get(other):
             return False
@@ -106,6 +97,7 @@ class RequiredWithRule(DependentRule):
 
 class RequiredIfRule(DependentRule):
     """Required if other field equals certain value"""
+
     name = "required_if"
 
     def __init__(self):
@@ -116,11 +108,7 @@ class RequiredIfRule(DependentRule):
     def passes(self, field, value, rule_values, input_) -> bool:
         other, val = rule_values[0].split(",")
         other_val = input_.get(other)
-        self.message_fields = dict(
-            field=field,
-            other=other,
-            value=val
-        )
+        self.message_fields = dict(field=field, other=other, value=val)
 
         if missing(input_, field) and equals(val, other_val):
             return False
@@ -133,6 +121,7 @@ class RequiredIfRule(DependentRule):
 
 class NotWithRule(DependentRule):
     """Not with other field"""
+
     name = "not_with"
 
     def __init__(self):
@@ -141,10 +130,7 @@ class NotWithRule(DependentRule):
 
     def passes(self, field, value, rule_values, input_) -> bool:
         other = rule_values[0]
-        self.message_fields = dict(
-            field=field,
-            other=other
-        )
+        self.message_fields = dict(field=field, other=other)
 
         if not missing(input_, field) and not missing(input_, other):
             return False
@@ -157,6 +143,7 @@ class NotWithRule(DependentRule):
 
 class FilledRule(DependentRule):
     """Not empty when present"""
+
     name = "filled"
 
     def __init__(self):
@@ -178,6 +165,7 @@ class FilledRule(DependentRule):
 
 class EmailRule(Rule):
     """Valid email"""
+
     name = "email"
 
     def passes(self, field, value) -> bool:
@@ -192,12 +180,13 @@ class EmailRule(Rule):
     def valid_email(email) -> bool:
         return regex_match(
             r"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
-            email
+            email,
         )
 
 
 class UrlRule(Rule):
     """Valid URL"""
+
     name = "url"
 
     def passes(self, field, value) -> bool:
@@ -217,13 +206,14 @@ class UrlRule(Rule):
             r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
             r"(?::\d+)?"  # optional port
             r"(?:/?|[/?]\S+)$",
-            re.IGNORECASE
+            re.IGNORECASE,
         )
         return regex_match(regex, url)
 
 
 class IpRule(Rule):
     """Valid IP"""
+
     name = "ip"
 
     def passes(self, field, value) -> bool:
@@ -247,6 +237,7 @@ class IpRule(Rule):
 
 class MinRule(DependentRule):
     """Min length"""
+
     name = "min"
 
     def __init__(self):
@@ -275,6 +266,7 @@ class MinRule(DependentRule):
 
 class MaxRule(DependentRule):
     """Max length"""
+
     name = "max"
 
     def __init__(self):
@@ -306,6 +298,7 @@ class InRule(DependentRule):
         In: The field under validation must be included in the given list
         of values
     """
+
     name = "in"
 
     def passes(self, field, value, rule_values, input_) -> bool:
@@ -320,6 +313,7 @@ class InRule(DependentRule):
 
 class AlphaNumRule(Rule):
     """Only letters and numbers"""
+
     name = "alpha_num"
 
     def passes(self, field, value) -> bool:
@@ -337,6 +331,7 @@ class AlphaNumRule(Rule):
 
 class AlphaNumSpaceRule(Rule):
     """Only letters, numbers and spaces"""
+
     name = "alpha_num_space"
 
     def passes(self, field, value) -> bool:
@@ -354,6 +349,7 @@ class AlphaNumSpaceRule(Rule):
 
 class StringRule(Rule):
     """Valid string"""
+
     name = "string"
 
     def passes(self, field, value) -> bool:
@@ -371,6 +367,7 @@ class StringRule(Rule):
 
 class IntegerRule(Rule):
     """Valid integer"""
+
     name = "integer"
 
     def passes(self, field, value) -> bool:
@@ -388,6 +385,7 @@ class IntegerRule(Rule):
 
 class BooleanRule(Rule):
     """Valid boolean"""
+
     name = "boolean"
 
     def passes(self, field, value) -> bool:
@@ -405,6 +403,7 @@ class BooleanRule(Rule):
 
 class ListRule(Rule):
     """Valid list"""
+
     name = "list"
 
     def passes(self, field, value) -> bool:
@@ -422,6 +421,7 @@ class ListRule(Rule):
 
 class Uuid4Rule(Rule):
     """Valid uuid4"""
+
     name = "uuid4"
 
     def passes(self, field, value) -> bool:
@@ -444,114 +444,9 @@ class Uuid4Rule(Rule):
         return str(val) == uuid
 
 
-class UniqueRule(DependentRule, SessionRule):
-    """Unique database record"""
-    name = "unique"
-
-    def passes(self, field, value, rule_values, input_) -> bool:
-        self.message_fields = dict(field=field)
-        table, column, *extra = rule_values[0].split(",")
-
-        ignore_col = extra[0] if len(extra) > 0 else None
-        ignore_val = extra[1] if len(extra) > 1 else None
-        where_col = extra[2] if len(extra) > 2 else None
-        where_val = extra[3] if len(extra) > 3 else None
-
-        exists = self._unique_check(
-            value,
-            table,
-            column,
-            ignore_col,
-            ignore_val,
-            where_col,
-            where_val
-        )
-
-        return not exists
-
-    def message(self) -> str:
-        return errors.UNIQUE_ERROR
-
-    def _unique_check(
-        self,
-        value,
-        table,
-        column,
-        ignore_col=None,
-        ignore_val=None,
-        where_col=None,
-        where_val=None
-    ):
-        # Create query
-        query = "SELECT * FROM {} WHERE {} = :value1".format(table, column)
-        params = {
-            "value1": value
-        }
-
-        # If ignore values are set
-        if (ignore_col and ignore_val and ignore_col != "null" and
-                ignore_val != "null"):
-            query += " AND {} != :ignore_val".format(ignore_col)
-            params["ignore_val"] = ignore_val
-
-        # If where values are set
-        if where_col and where_val:
-            query += " AND {} = :where_val".format(where_col)
-            params["where_val"] = where_val
-
-        result = self._session.execute(query, params).first()
-
-        return result
-
-
-class ExistsRule(DependentRule, SessionRule):
-    """Exists in database"""
-    name = "exists"
-
-    def __init__(self, session):
-        super().__init__(session)
-        self.error = None
-
-    def passes(self, field, value, rule_values, input_) -> bool:
-        table, column, *extra = rule_values[0].split(",")
-
-        # Check if extra where is set
-        if extra:
-            where_col = extra[0]
-            where_val = extra[1]
-            self.message_fields = dict(field=field, other=where_col)
-            self.error = errors.EXISTS_WHERE_ERROR
-
-            query = (
-                "SELECT * FROM {} WHERE {} = :value1 "
-                "AND {} = :value2".format(table, column, where_col)
-            )
-            params = {
-                "value1": value,
-                "value2": where_val
-            }
-            exists = self._session.execute(query, params).first()
-        else:
-            self.message_fields = dict(field=field)
-            self.error = errors.EXISTS_ERROR
-
-            query = "SELECT * FROM {} WHERE {} = :value1".format(
-                table,
-                column
-            )
-            params = {
-                "value1": value
-            }
-            exists = self._session.execute(query, params).first()
-
-        return exists
-
-    def message(self) -> str:
-        return self.error
-
-
 class JsonRule(Rule):
     """Valid json"""
+
     name = "json"
 
     def passes(self, field, value) -> bool:
@@ -573,6 +468,7 @@ class JsonRule(Rule):
 
 class AcceptedRule(Rule):
     """The field must be yes, on, 1, or true"""
+
     name = "accepted"
 
     def passes(self, field, value) -> bool:
