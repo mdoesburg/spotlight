@@ -479,3 +479,23 @@ class AcceptedRule(Rule):
 
     def message(self) -> str:
         return errors.ACCEPTED_ERROR
+
+
+class StartsWithRule(DependentRule):
+    """The field under validation must start with one of the given values."""
+
+    name = "starts_with"
+
+    def passes(self, field, value, rule_values, input_) -> bool:
+        _rule_values = rule_values[0].split(",")
+        self.message_fields = dict(field=field, values=", ".join(_rule_values))
+
+        valid = False
+        for rule_val in _rule_values:
+            if str(value).startswith(rule_val):
+                valid = True
+
+        return valid
+
+    def message(self) -> str:
+        return errors.STARTS_WITH_ERROR

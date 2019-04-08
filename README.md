@@ -99,6 +99,7 @@ Available methods:
 * [json](#json)
 * [uuid4](#uuid4)
 * [accepted](#accepted)
+* [starts_with](#starts_with)
 
 ### required
 The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
@@ -227,6 +228,12 @@ uuid4
 The field under validation must be yes, on, 1, or true. This is useful for validating "Terms of Service" acceptance.
 ```
 accepted
+```
+
+### starts_with
+The field under validation must start with one of the given values.
+```
+starts_with:value,other,...
 ```
 
 ## Advanced Usage

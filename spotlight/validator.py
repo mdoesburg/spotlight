@@ -57,6 +57,7 @@ class Validator:
             rls.ListRule(),
             rls.Uuid4Rule(),
             rls.AcceptedRule(),
+            rls.StartsWithRule()
         ]
 
     def _setup_rule(self, rule):

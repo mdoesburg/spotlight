@@ -47,3 +47,6 @@ NO_SESSION_ERROR = (
     "validator."
 )
 RULE_NOT_FOUND = "The '{rule}' rule doesn't exist"
+STARTS_WITH_ERROR = (
+    "The {field} field must start with one of the following values: {values}."
+)
