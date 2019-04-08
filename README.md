@@ -11,8 +11,8 @@ Laravel style input validation for Python.
 * [Advanced Usage](#advanced-usage)
   * [Overwriting Messages](#overwriting-messages)
   * [Custom Rules](#custom-rules)
-  * [Plugins](#plugins)
-    * [Spotlight SQLAlchemy](#spotlight-sqlalchemy)
+* [Plugins](#plugins)
+  * [Spotlight SQLAlchemy](#spotlight-sqlalchemy)
 
 ## Installation
 Spotlight can be installed via pip:
@@ -243,6 +243,6 @@ Docs coming soon...
 ### Custom Rules
 Docs coming soon...
 
-### Plugins
-#### Spotlight SQLAlchemy
+## Plugins
+### Spotlight SQLAlchemy
 To use database rules such as **unique** and **exists** checkout the [Spotlight SQLAlchemy](https://github.com/mdoesburg/spotlight-sqlalchemy) plugin.
