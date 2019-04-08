@@ -61,3 +61,17 @@ class MaxTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_max_rule_with_none_expect_no_error(self):
+        rules = {
+            "test": "string|max:255"
+        }
+        input_values = {
+            "test": None
+        }
+        expected = None
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)

@@ -178,7 +178,7 @@ class Validator:
         return self._validate_present(field) or self._is_implicit(rule)
 
     def _validate_present(self, field):
-        return field in self._input
+        return field in self._input and self._input.get(field) is not None
 
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
