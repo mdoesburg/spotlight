@@ -15,7 +15,6 @@ class Validator:
 
     def __init__(self, plugins: List[Plugin] = None):
 
-        self._rules = None
         self._input = None
         self._errors = {}
 
@@ -81,7 +80,7 @@ class Validator:
         self._setup_rule(rule)
 
     def validate(
-        self, input_: Union[dict, object], rules: dict, flat: bool = False
+        self, input_: Union[dict, object], input_rules: dict, flat: bool = False
     ) -> Union[dict, list]:
         """
         Validate input with given rules.
@@ -105,17 +104,26 @@ class Validator:
         errors: Union[dict, list] (default=dict)
             Returns a dict or list of errors. Dependent on the flat flag.
         """
-        self._rules = rules
-        self._input = input_
+
         self._errors = {}
 
         # Transform input to dictionary
-        if not isinstance(self._input, dict):
-            self._input = self._input.__dict__
+        if not isinstance(input_, dict):
+            input_ = input_.__dict__
 
         # Iterate over fields
-        for field in self._rules:
-            rules = self._rules.get(field).split("|")
+        for field in input_rules:
+            print("_____________________________________________________________")
+            print(input_rules)
+            print(field)
+            print(input_)
+            if type(input_rules.get(field)) is dict:
+                print("DICTTT!")
+                self.validate(input_[field],input_rules.get(field))
+                continue
+
+            print("NONDICT")
+            rules = input_rules.get(field).split("|")
             # Iterate over rules
             for rule in rules:
                 # Verify that rule isn't empty
@@ -124,13 +132,13 @@ class Validator:
                     rule_name, *rule_values = rule.split(":")
 
                     # Check if field is validatable
-                    if self._is_validatable(rule_name, field):
+                    if self._is_validatable(rule_name, field, input_):
                         # Check if rule exists
                         if rule_name in self._available_rules:
                             matched_rule = self._available_rules.get(rule_name)
 
                             # Execute correct validation method
-                            value = self._input.get(field)
+                            value = input_.get(field)
 
                             # Rule
                             if isinstance(matched_rule, rls.Rule):
@@ -138,16 +146,16 @@ class Validator:
                             # Dependent Rule
                             elif isinstance(matched_rule, rls.DependentRule):
                                 passed = matched_rule.passes(
-                                    field, value, rule_values, self._input
+                                    field, value, rule_values, input_
                                 )
 
                             # If rule didn't pass, add error
                             if not passed:
                                 self._add_error(
-                                    rule_name,
-                                    field,
-                                    matched_rule.message(),
-                                    matched_rule.message_fields,
+                                    rule=rule_name,
+                                    field=field,
+                                    error=matched_rule.message(),
+                                    fields=matched_rule.message_fields
                                 )
 
                                 # Stop validation
@@ -156,12 +164,12 @@ class Validator:
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
-        self._overwrite_errors()
+                        self._overwrite_errors()
 
-        if flat:
-            return self._flatten_errors()
-
-        return self._errors
+                        if flat:
+                            return self._flatten_errors()
+                        print("errors",self._errors)
+                        return self._errors
 
     def _flatten_errors(self) -> list:
         new_errors = []
@@ -171,14 +179,14 @@ class Validator:
 
         return new_errors
 
-    def _is_validatable(self, rule, field):
-        return self._present_or_rule_is_implicit(rule, field)
+    def _is_validatable(self, rule, field,input_):
+        return self._present_or_rule_is_implicit(rule, field,input_)
 
-    def _present_or_rule_is_implicit(self, rule, field):
-        return self._validate_present(field) or self._is_implicit(rule)
+    def _present_or_rule_is_implicit(self, rule, field, input_):
+        return self._validate_present(field,input_) or self._is_implicit(rule)
 
-    def _validate_present(self, field):
-        return field in self._input and self._input.get(field) is not None
+    def _validate_present(self, field,input_):
+        return field in input_ and input_.get(field) is not None
 
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
