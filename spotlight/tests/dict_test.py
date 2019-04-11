@@ -46,6 +46,20 @@ class DictTest(ValidatorTest):
 
         self.assertEqual(errs[0], expected)
 
+    def test_dict_rule_and_required_with_non_empty_dict_expect_no_error(self):
+        rules = {
+            "test": "required|dict"
+        }
+        input_values = {
+            "test": {"field": "value"}
+        }
+        expected = None
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
     def test_dict_rule_with_boolean_true_expect_error(self):
         input_values = {
             "test": True
