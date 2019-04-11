@@ -39,8 +39,8 @@ def empty(val):
         if val.strip() == "":
             return True
 
-    # Empty list
-    if isinstance(val, list):
+    # Empty list or empty dict
+    if isinstance(val, list) or isinstance(val, dict):
         if len(val) == 0:
             return True
 

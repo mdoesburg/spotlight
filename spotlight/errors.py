@@ -27,6 +27,7 @@ UUID4_ERROR = "The {field} field must be a valid UUID."
 JSON_ERROR = "The {field} field must be a valid JSON string."
 LIST_ERROR = "The {field} field must be a list."
 ACCEPTED_ERROR = "The {field} field must be accepted."
+DICT_ERROR = "The {field} field must be a dict."
 
 RULE_NOT_FOUND = "The '{rule}' rule doesn't exist"
 STARTS_WITH_ERROR = (

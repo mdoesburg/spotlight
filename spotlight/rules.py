@@ -499,3 +499,21 @@ class StartsWithRule(DependentRule):
 
     def message(self) -> str:
         return errors.STARTS_WITH_ERROR
+
+
+class DictRule(Rule):
+    """Valid dict"""
+
+    name = "dict"
+
+    def passes(self, field, value) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_dict(value)
+
+    def message(self) -> str:
+        return errors.DICT_ERROR
+
+    @staticmethod
+    def valid_dict(value) -> bool:
+        return type(value) is dict
