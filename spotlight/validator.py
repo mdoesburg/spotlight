@@ -83,27 +83,27 @@ class Validator:
         self, input_: Union[dict, object], input_rules: dict, flat: bool = False
     ):
         self._output = input_rules.copy()
-        self.loop_over_rules(input_, input_rules)
-        self.clean_output(self._output)
+        self._validate_input(input_, input_rules)
+        self._clean_output(self._output)
         if flat:
             self._flat_list = []
             self.flatten_output(self._output)
             return self._flat_list
         return self._output
 
-    def clean_output(self, output):
+    def _clean_output(self, output):
         keys_to_be_removed = []
         for item in output:
 
             if type(output[item]) is dict:
-                self.clean_output(output[item])
+                self._clean_output(output[item])
             elif type(output[item]) is str:
                 keys_to_be_removed.append(item)
 
         for key in keys_to_be_removed:
             output.pop(key)
 
-    def loop_over_rules(
+    def _validate_input(
         self, input_: Union[dict, object], input_rules: dict
     ) -> Union[dict, list]:
         """
@@ -128,7 +128,7 @@ class Validator:
         # Iterate over fields
         for field in input_rules:
             if type(input_rules.get(field)) is dict:
-                self.loop_over_rules(input_[field], input_rules.get(field))
+                self._validate_input(input_[field], input_rules.get(field))
                 continue
 
             rules = input_rules.get(field).split("|")
