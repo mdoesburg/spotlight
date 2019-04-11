@@ -272,6 +272,10 @@ class Validator:
     def valid_list(value) -> bool:
         return rls.ListRule.valid_list(value)
 
+    @staticmethod
+    def valid_dict(value) -> bool:
+        return rls.DictRule.valid_dict(value)
+
     def _setup_plugins(self, plugins: List[Plugin]):
         for plugin in plugins:
             self.register_rules(plugin.rules())

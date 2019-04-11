@@ -74,6 +74,7 @@ Available methods:
 * valid_boolean
 * valid_json
 * valid_list
+* valid_dict
 * valid_alpha_num
 * valid_alpha_num_space
 
