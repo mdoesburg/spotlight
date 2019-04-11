@@ -15,12 +15,12 @@ class Validator:
 
     def __init__(self, plugins: List[Plugin] = None):
 
-        self._input = None
-        self._errors = {}
+        self._output = {}
+        self._flat_list = []
 
-        self.messages = {}
-        self.fields = {}
-        self.values = {}
+        self.overwrite_messages = {}
+        self.overwrite_fields = {}
+        self.overwrite_values = {}
 
         self._implicit_rules = []
         self._registered_rules = []
@@ -56,7 +56,7 @@ class Validator:
             rls.ListRule(),
             rls.Uuid4Rule(),
             rls.AcceptedRule(),
-            rls.StartsWithRule()
+            rls.StartsWithRule(),
         ]
 
     def _setup_rule(self, rule):
@@ -81,6 +81,30 @@ class Validator:
 
     def validate(
         self, input_: Union[dict, object], input_rules: dict, flat: bool = False
+    ):
+        self._output = input_rules.copy()
+        self.loop_over_rules(input_, input_rules)
+        self.clean_output(self._output)
+        if flat:
+            self._flat_list = []
+            self.flatten_output(self._output)
+            return self._flat_list
+        return self._output
+
+    def clean_output(self, output):
+        keys_to_be_removed = []
+        for item in output:
+
+            if type(output[item]) is dict:
+                self.clean_output(output[item])
+            elif type(output[item]) is str:
+                keys_to_be_removed.append(item)
+
+        for key in keys_to_be_removed:
+            output.pop(key)
+
+    def loop_over_rules(
+        self, input_: Union[dict, object], input_rules: dict
     ) -> Union[dict, list]:
         """
         Validate input with given rules.
@@ -91,21 +115,11 @@ class Validator:
             Dict or object with input that needs to be validated.
             For example: {"email": "john.doe@example.com"},
             Input(email="john.doe@example.com")
-        rules : Union[dict, object]
+        input_rules : Union[dict, object]
             Dict with validation rules for given input.
             For example: {"email": "required|email|unique:user,email"}
-        flat : bool (default=False)
-            Determines if a flat list of errors or a dict of errors should be
-            returned. For example: ["error1", "error2", "error3"] vs.
-            {"email": ["error1", "error2"], "password": ["error3"]}
 
-        Returns
-        ----------
-        errors: Union[dict, list] (default=dict)
-            Returns a dict or list of errors. Dependent on the flat flag.
         """
-
-        self._errors = {}
 
         # Transform input to dictionary
         if not isinstance(input_, dict):
@@ -113,16 +127,10 @@ class Validator:
 
         # Iterate over fields
         for field in input_rules:
-            print("_____________________________________________________________")
-            print(input_rules)
-            print(field)
-            print(input_)
             if type(input_rules.get(field)) is dict:
-                print("DICTTT!")
-                self.validate(input_[field],input_rules.get(field))
+                self.loop_over_rules(input_[field], input_rules.get(field))
                 continue
 
-            print("NONDICT")
             rules = input_rules.get(field).split("|")
             # Iterate over rules
             for rule in rules:
@@ -155,7 +163,7 @@ class Validator:
                                     rule=rule_name,
                                     field=field,
                                     error=matched_rule.message(),
-                                    fields=matched_rule.message_fields
+                                    fields=matched_rule.message_fields,
                                 )
 
                                 # Stop validation
@@ -164,76 +172,55 @@ class Validator:
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
-                        self._overwrite_errors()
-
-                        if flat:
-                            return self._flatten_errors()
-                        print("errors",self._errors)
-                        return self._errors
-
-    def _flatten_errors(self) -> list:
-        new_errors = []
-        for key, val in self._errors.items():
-            for error in self._errors.get(key):
-                new_errors.append(error)
-
-        return new_errors
-
-    def _is_validatable(self, rule, field,input_):
-        return self._present_or_rule_is_implicit(rule, field,input_)
+    def _is_validatable(self, rule, field, input_):
+        return self._present_or_rule_is_implicit(rule, field, input_)
 
     def _present_or_rule_is_implicit(self, rule, field, input_):
-        return self._validate_present(field,input_) or self._is_implicit(rule)
+        return self._validate_present(field, input_) or self._is_implicit(rule)
 
-    def _validate_present(self, field,input_):
+    def _validate_present(self, field, input_):
         return field in input_ and input_.get(field) is not None
 
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
 
-    def _overwrite_error(self, field, rule):
-        subfield = field + "." + rule
-        if subfield in self.messages:
-            return self.messages.get(subfield)
-
-        return False
-
-    def _overwrite_errors(self):
-        for field in self.messages:
-            if field in self._errors and "." not in field:
-                new_error = self.messages.get(field)
-                formatted_error = self._format_error(
-                    new_error, field, dict(field=field)
-                )
-                self._errors[field] = [formatted_error]
-
-    def _overwrite_fields(self, fields):
-        for field in fields:
-            if fields.get(field) in self.fields:
-                new_field_name = self.fields.get(fields.get(field))
-                fields[field] = new_field_name
-
-    def _overwrite_values(self, field, fields):
-        if field in self.values:
-            value_overwrites = self.values.get(field)
-            for overwrite in value_overwrites:
-                if overwrite in fields:
-                    fields[overwrite] = value_overwrites.get(overwrite)
-
     def _add_error(self, rule, field, error, fields=None):
-        if field not in self._errors:
-            self._errors[field] = []
+        self.place_error_in_output(field, rule, error, self._output, fields)
 
-        overwrite = self._overwrite_error(field, rule)
-        formatted_error = self._format_error(overwrite or error, field, fields)
+    def place_error_in_output(self, field, rule, error, output, fields):
+        for item in output:
+            if type(output[item]) is dict:
+                self.place_error_in_output(field, rule, error, output[item], fields)
 
-        self._errors[field].append(formatted_error)
+            if item == field:
+                if type(output[field]) is str:
+                    output[field] = []
 
-    def _format_error(self, error, field, fields):
-        self._overwrite_fields(fields)
-        self._overwrite_values(field, fields)
+                combined_field = field + "." + rule
 
-        return error.format(**fields)
+                if field in self.overwrite_messages:
+                    error = self.overwrite_messages[field]
+
+                if combined_field in self.overwrite_messages:
+                    error = self.overwrite_messages[combined_field]
+
+                if field in self.overwrite_fields:
+                    for key, value in fields.items():
+                        if value in self.overwrite_fields:
+                            fields[key] = self.overwrite_fields[value]
+
+                if field in self.overwrite_values:
+                    fields["values"] = self.overwrite_values[field]["values"]
+
+                output[field].append(error.format(**fields))
+
+    def flatten_output(self, output):
+        for item in output:
+            if type(output[item]) == dict:
+                self.flatten_output(output[item])
+                continue
+            for error in output[item]:
+                self._flat_list.append(error)
 
     @staticmethod
     def valid_email(email) -> bool:

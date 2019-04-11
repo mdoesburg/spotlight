@@ -66,7 +66,7 @@ class CustomRuleTest(ValidatorTest):
         rule = ExactlyFiveCharsRule()
         expected = rule.message().format(field=field, name="lol")
 
-        self.validator.fields = fields
+        self.validator.overwrite_fields = fields
         self.validator.register_rule(rule)
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(field)

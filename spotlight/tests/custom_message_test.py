@@ -4,9 +4,9 @@ from spotlight import errors as err
 
 class CustomMessageTest(ValidatorTest):
     def setUp(self):
-        self.validator.messages = {}
-        self.validator.fields = {}
-        self.validator.values = {}
+        self.validator.overwrite_messages = {}
+        self.validator.overwrite_fields = {}
+        self.validator.overwrite_values = {}
 
     def test_custom_field_message_expect_new_message(self):
         new_message = "You've supplied an invalid e-mail address."
@@ -19,7 +19,7 @@ class CustomMessageTest(ValidatorTest):
         messages = {
             "email": new_message
         }
-        self.validator.messages = messages
+        self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("email")
@@ -35,7 +35,7 @@ class CustomMessageTest(ValidatorTest):
         messages = {
             "email.required": new_message
         }
-        self.validator.messages = messages
+        self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("email")
@@ -51,7 +51,7 @@ class CustomMessageTest(ValidatorTest):
         messages = {
             "email.required": new_message
         }
-        self.validator.messages = messages
+        self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("email")
@@ -69,7 +69,7 @@ class CustomMessageTest(ValidatorTest):
         messages = {
             "email.min": new_message
         }
-        self.validator.messages = messages
+        self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("email")
@@ -86,7 +86,7 @@ class CustomMessageTest(ValidatorTest):
         fields = {
             "test": "custom"
         }
-        self.validator.fields = fields
+        self.validator.overwrite_fields = fields
         expected = err.MIN_STRING_ERROR.format(field="custom", min=5)
 
         errors = self.validator.validate(input_values, rules)
@@ -110,8 +110,8 @@ class CustomMessageTest(ValidatorTest):
             "test1": "custom",
             "test2": "lol"
         }
-        self.validator.messages = messages
-        self.validator.fields = fields
+        self.validator.overwrite_messages = messages
+        self.validator.overwrite_fields = fields
         expected = new_message.format(field="lol", other="custom")
 
         errors = self.validator.validate(input_values, rules)
@@ -133,8 +133,8 @@ class CustomMessageTest(ValidatorTest):
         fields = {
             "email2": "e-mail address"
         }
-        self.validator.messages = messages
-        self.validator.fields = fields
+        self.validator.overwrite_messages = messages
+        self.validator.overwrite_fields = fields
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("email2")
@@ -155,7 +155,7 @@ class CustomMessageTest(ValidatorTest):
                 "values": new_values
             }
         }
-        self.validator.values = values
+        self.validator.overwrite_values = values
         expected = err.IN_ERROR.format(field=field, values=new_values)
 
         errors = self.validator.validate(input_values, rules)
@@ -183,8 +183,8 @@ class CustomMessageTest(ValidatorTest):
             "credit_card_number": field,
             "cc": value
         }
-        self.validator.messages = messages
-        self.validator.fields = fields
+        self.validator.overwrite_messages = messages
+        self.validator.overwrite_fields = fields
         expected = new_message.format(
             field=field,
             other=other,
