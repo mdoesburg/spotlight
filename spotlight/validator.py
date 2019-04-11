@@ -5,16 +5,19 @@ from spotlight import rules as rls
 
 
 class Validator:
-    class Plugin:
-        def rules(self) -> List[rls.BaseRule]:
-            return []
-
     """
     Creates an instance of the Validator class.
     """
 
-    def __init__(self, plugins: List[Plugin] = None):
+    class Plugin:
+        """
+        Creates an instance of the Validator Plugin class.
+        """
 
+        def rules(self) -> List[rls.BaseRule]:
+            return []
+
+    def __init__(self, plugins: List[Plugin] = None):
         self._output = {}
         self._flat_list = []
 
@@ -82,45 +85,34 @@ class Validator:
     def validate(
         self, input_: Union[dict, object], input_rules: dict, flat: bool = False
     ):
+        """
+         Validate input with given rules.
+
+         Parameters
+         ----------
+         input_ : Union[dict, object]
+             Dict or object with input that needs to be validated.
+             For example: {"email": "john.doe@example.com"},
+             Input(email="john.doe@example.com")
+         input_rules : Union[dict, object]
+             Dict with validation rules for given input.
+             For example: {"email": "required|email|unique:user,email"}
+
+         """
+
         self._output = input_rules.copy()
         self._validate_input(input_, input_rules)
         self._clean_output(self._output)
+
         if flat:
             self._flat_list = []
-            self.flatten_output(self._output)
+            self._flatten_output(self._output)
+
             return self._flat_list
+
         return self._output
 
-    def _clean_output(self, output):
-        keys_to_be_removed = []
-        for item in output:
-
-            if type(output[item]) is dict:
-                self._clean_output(output[item])
-            elif type(output[item]) is str:
-                keys_to_be_removed.append(item)
-
-        for key in keys_to_be_removed:
-            output.pop(key)
-
-    def _validate_input(
-        self, input_: Union[dict, object], input_rules: dict
-    ) -> Union[dict, list]:
-        """
-        Validate input with given rules.
-
-        Parameters
-        ----------
-        input_ : Union[dict, object]
-            Dict or object with input that needs to be validated.
-            For example: {"email": "john.doe@example.com"},
-            Input(email="john.doe@example.com")
-        input_rules : Union[dict, object]
-            Dict with validation rules for given input.
-            For example: {"email": "required|email|unique:user,email"}
-
-        """
-
+    def _validate_input(self, input_: Union[dict, object], input_rules: dict):
         # Transform input to dictionary
         if not isinstance(input_, dict):
             input_ = input_.__dict__
@@ -172,6 +164,18 @@ class Validator:
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
+    def _clean_output(self, output):
+        keys_to_be_removed = []
+        for item in output:
+
+            if type(output[item]) is dict:
+                self._clean_output(output[item])
+            elif type(output[item]) is str:
+                keys_to_be_removed.append(item)
+
+        for key in keys_to_be_removed:
+            output.pop(key)
+
     def _is_validatable(self, rule, field, input_):
         return self._present_or_rule_is_implicit(rule, field, input_)
 
@@ -185,12 +189,12 @@ class Validator:
         return rule in self._implicit_rules
 
     def _add_error(self, rule, field, error, fields=None):
-        self.place_error_in_output(field, rule, error, self._output, fields)
+        self._add_error_to_output(field, rule, error, self._output, fields)
 
-    def place_error_in_output(self, field, rule, error, output, fields):
+    def _add_error_to_output(self, field, rule, error, output, fields):
         for item in output:
             if type(output[item]) is dict:
-                self.place_error_in_output(field, rule, error, output[item], fields)
+                self._add_error_to_output(field, rule, error, output[item], fields)
 
             if item == field:
                 if type(output[field]) is str:
@@ -214,10 +218,10 @@ class Validator:
 
                 output[field].append(error.format(**fields))
 
-    def flatten_output(self, output):
+    def _flatten_output(self, output):
         for item in output:
             if type(output[item]) == dict:
-                self.flatten_output(output[item])
+                self._flatten_output(output[item])
                 continue
             for error in output[item]:
                 self._flat_list.append(error)
