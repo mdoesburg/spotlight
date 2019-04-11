@@ -96,6 +96,7 @@ Available methods:
 * [integer](#integer)
 * [boolean](#boolean)
 * [list](#list)
+* [dict](#dict)
 * [json](#json)
 * [uuid4](#uuid4)
 * [accepted](#accepted)
@@ -210,6 +211,12 @@ boolean
 The field under validation must be a list.
 ```
 list
+```
+
+### dict
+The field under validation must be a dict.
+```
+dict
 ```
 
 ### json
