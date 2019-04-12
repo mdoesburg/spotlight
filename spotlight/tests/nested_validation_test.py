@@ -215,3 +215,12 @@ class NestedValidationTest(ValidatorTest):
         errors = self.validator.validate(input_values, rules)
 
         self.assertEqual(expected, errors)
+
+    def test_nested_validation_with_filled_field_and_no_input_expect_error(self):
+        rules = {"nested": {"test": "filled"}}
+        input_values = {"nested": {"test": None}}
+        expected = {"nested": {"test": [errs.FILLED_ERROR.format(field="test")]}}
+
+        errors = self.validator.validate(input_values, rules)
+
+        self.assertEqual(expected, errors)
