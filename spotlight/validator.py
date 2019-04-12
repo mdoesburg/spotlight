@@ -113,6 +113,9 @@ class Validator:
         return self._output
 
     def _validate_input(self, input_: Union[dict, object], input_rules: dict):
+        if input_ is None:
+            return
+
         # Transform input to dictionary
         if not isinstance(input_, dict):
             input_ = input_.__dict__
@@ -120,7 +123,8 @@ class Validator:
         # Iterate over fields
         for field in input_rules:
             if type(input_rules.get(field)) is dict:
-                self._validate_input(input_[field], input_rules.get(field))
+                if field in input_:
+                    self._validate_input(input_[field], input_rules.get(field))
                 continue
 
             rules = input_rules.get(field).split("|")
@@ -167,11 +171,18 @@ class Validator:
     def _clean_output(self, output):
         keys_to_be_removed = []
         for item in output:
-
             if type(output[item]) is dict:
                 self._clean_output(output[item])
             elif type(output[item]) is str:
                 keys_to_be_removed.append(item)
+
+        for key in keys_to_be_removed:
+            output.pop(key)
+
+        keys_to_be_removed = []
+        for key in output:
+            if len(output.get(key)) == 0:
+                keys_to_be_removed.append(key)
 
         for key in keys_to_be_removed:
             output.pop(key)
@@ -200,11 +211,10 @@ class Validator:
                 if type(output[field]) is str:
                     output[field] = []
 
-                combined_field = field + "." + rule
-
                 if field in self.overwrite_messages:
                     error = self.overwrite_messages[field]
 
+                combined_field = field + "." + rule
                 if combined_field in self.overwrite_messages:
                     error = self.overwrite_messages[combined_field]
 
