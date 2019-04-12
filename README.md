@@ -49,6 +49,33 @@ validator = Validator()
 errors = validator.validate(input_, rules)
 ```
 
+Nested validation:
+```python
+rules = {
+    "token": "required|string",
+    "person": {
+        "first_name": "required|string|max:255",
+        "last_name": "required|string|max:255",
+        "email": "required|email",
+        "password": "required|min:8|max:255"
+    }
+}
+
+input_ = {
+    "token": "test-token",
+    "person": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+        "password": "test1234"
+    }
+}
+
+validator = Validator()
+errors = validator.validate(input_, rules)
+```
+
+
 ### Direct Validation
 Sometimes there is a need for quick and simple validation, without having to create a rule set. The Validator class exposes several static methods that can be used for direct validation.
 
