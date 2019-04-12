@@ -5,23 +5,25 @@ from spotlight import rules as rls
 
 
 class Validator:
-    class Plugin:
-        def rules(self) -> List[rls.BaseRule]:
-            return []
-
     """
     Creates an instance of the Validator class.
     """
 
+    class Plugin:
+        """
+        Creates an instance of the Validator Plugin class.
+        """
+
+        def rules(self) -> List[rls.BaseRule]:
+            return []
+
     def __init__(self, plugins: List[Plugin] = None):
+        self._output = {}
+        self._flat_list = []
 
-        self._rules = None
-        self._input = None
-        self._errors = {}
-
-        self.messages = {}
-        self.fields = {}
-        self.values = {}
+        self.overwrite_messages = {}
+        self.overwrite_fields = {}
+        self.overwrite_values = {}
 
         self._implicit_rules = []
         self._registered_rules = []
@@ -82,41 +84,51 @@ class Validator:
         self._setup_rule(rule)
 
     def validate(
-        self, input_: Union[dict, object], rules: dict, flat: bool = False
-    ) -> Union[dict, list]:
+        self, input_: Union[dict, object], input_rules: dict, flat: bool = False
+    ):
         """
-        Validate input with given rules.
+         Validate input with given rules.
 
-        Parameters
-        ----------
-        input_ : Union[dict, object]
-            Dict or object with input that needs to be validated.
-            For example: {"email": "john.doe@example.com"},
-            Input(email="john.doe@example.com")
-        rules : Union[dict, object]
-            Dict with validation rules for given input.
-            For example: {"email": "required|email|unique:user,email"}
-        flat : bool (default=False)
-            Determines if a flat list of errors or a dict of errors should be
-            returned. For example: ["error1", "error2", "error3"] vs.
-            {"email": ["error1", "error2"], "password": ["error3"]}
+         Parameters
+         ----------
+         input_ : Union[dict, object]
+             Dict or object with input that needs to be validated.
+             For example: {"email": "john.doe@example.com"},
+             Input(email="john.doe@example.com")
+         input_rules : Union[dict, object]
+             Dict with validation rules for given input.
+             For example: {"email": "required|email|unique:user,email"}
 
-        Returns
-        ----------
-        errors: Union[dict, list] (default=dict)
-            Returns a dict or list of errors. Dependent on the flat flag.
-        """
-        self._rules = rules
-        self._input = input_
-        self._errors = {}
+         """
+
+        self._output = input_rules.copy()
+        self._validate_input(input_, input_rules)
+        self._clean_output(self._output)
+
+        if flat:
+            self._flat_list = []
+            self._flatten_output(self._output)
+
+            return self._flat_list
+
+        return self._output
+
+    def _validate_input(self, input_: Union[dict, object], input_rules: dict):
+        if input_ is None:
+            return
 
         # Transform input to dictionary
-        if not isinstance(self._input, dict):
-            self._input = self._input.__dict__
+        if not isinstance(input_, dict):
+            input_ = input_.__dict__
 
         # Iterate over fields
-        for field in self._rules:
-            rules = self._rules.get(field).split("|")
+        for field in input_rules:
+            if type(input_rules.get(field)) is dict:
+                if field in input_:
+                    self._validate_input(input_[field], input_rules.get(field))
+                continue
+
+            rules = input_rules.get(field).split("|")
             # Iterate over rules
             for rule in rules:
                 # Verify that rule isn't empty
@@ -125,13 +137,13 @@ class Validator:
                     rule_name, *rule_values = rule.split(":")
 
                     # Check if field is validatable
-                    if self._is_validatable(rule_name, field):
+                    if self._is_validatable(rule_name, field, input_):
                         # Check if rule exists
                         if rule_name in self._available_rules:
                             matched_rule = self._available_rules.get(rule_name)
 
                             # Execute correct validation method
-                            value = self._input.get(field)
+                            value = input_.get(field)
 
                             # Rule
                             if isinstance(matched_rule, rls.Rule):
@@ -139,16 +151,16 @@ class Validator:
                             # Dependent Rule
                             elif isinstance(matched_rule, rls.DependentRule):
                                 passed = matched_rule.passes(
-                                    field, value, rule_values, self._input
+                                    field, value, rule_values, input_
                                 )
 
                             # If rule didn't pass, add error
                             if not passed:
                                 self._add_error(
-                                    rule_name,
-                                    field,
-                                    matched_rule.message(),
-                                    matched_rule.message_fields,
+                                    rule=rule_name,
+                                    field=field,
+                                    error=matched_rule.message(),
+                                    fields=matched_rule.message_fields,
                                 )
 
                                 # Stop validation
@@ -157,76 +169,73 @@ class Validator:
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
-        self._overwrite_errors()
+    def _clean_output(self, output):
+        keys_to_be_removed = []
+        for item in output:
+            if type(output[item]) is dict:
+                self._clean_output(output[item])
+            elif type(output[item]) is str:
+                keys_to_be_removed.append(item)
 
-        if flat:
-            return self._flatten_errors()
+        for key in keys_to_be_removed:
+            output.pop(key)
 
-        return self._errors
+        keys_to_be_removed = []
+        for key in output:
+            if len(output.get(key)) == 0:
+                keys_to_be_removed.append(key)
 
-    def _flatten_errors(self) -> list:
-        new_errors = []
-        for key, val in self._errors.items():
-            for error in self._errors.get(key):
-                new_errors.append(error)
+        for key in keys_to_be_removed:
+            output.pop(key)
 
-        return new_errors
+    def _is_validatable(self, rule, field, input_):
+        return self._present_or_rule_is_implicit(rule, field, input_)
 
-    def _is_validatable(self, rule, field):
-        return self._present_or_rule_is_implicit(rule, field)
+    def _present_or_rule_is_implicit(self, rule, field, input_):
+        return self._validate_present(field, input_) or self._is_implicit(rule)
 
-    def _present_or_rule_is_implicit(self, rule, field):
-        return self._validate_present(field) or self._is_implicit(rule)
-
-    def _validate_present(self, field):
-        return field in self._input and self._input.get(field) is not None
+    def _validate_present(self, field, input_):
+        return field in input_ and input_.get(field) is not None
 
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
 
-    def _overwrite_error(self, field, rule):
-        subfield = field + "." + rule
-        if subfield in self.messages:
-            return self.messages.get(subfield)
-
-        return False
-
-    def _overwrite_errors(self):
-        for field in self.messages:
-            if field in self._errors and "." not in field:
-                new_error = self.messages.get(field)
-                formatted_error = self._format_error(
-                    new_error, field, dict(field=field)
-                )
-                self._errors[field] = [formatted_error]
-
-    def _overwrite_fields(self, fields):
-        for field in fields:
-            if fields.get(field) in self.fields:
-                new_field_name = self.fields.get(fields.get(field))
-                fields[field] = new_field_name
-
-    def _overwrite_values(self, field, fields):
-        if field in self.values:
-            value_overwrites = self.values.get(field)
-            for overwrite in value_overwrites:
-                if overwrite in fields:
-                    fields[overwrite] = value_overwrites.get(overwrite)
-
     def _add_error(self, rule, field, error, fields=None):
-        if field not in self._errors:
-            self._errors[field] = []
+        self._add_error_to_output(field, rule, error, self._output, fields)
 
-        overwrite = self._overwrite_error(field, rule)
-        formatted_error = self._format_error(overwrite or error, field, fields)
+    def _add_error_to_output(self, field, rule, error, output, fields):
+        for item in output:
+            if type(output[item]) is dict:
+                self._add_error_to_output(field, rule, error, output[item], fields)
 
-        self._errors[field].append(formatted_error)
+            if item == field:
+                if type(output[field]) is str:
+                    output[field] = []
 
-    def _format_error(self, error, field, fields):
-        self._overwrite_fields(fields)
-        self._overwrite_values(field, fields)
+                if field in self.overwrite_messages:
+                    error = self.overwrite_messages[field]
 
-        return error.format(**fields)
+                combined_field = field + "." + rule
+                if combined_field in self.overwrite_messages:
+                    error = self.overwrite_messages[combined_field]
+
+                if field in self.overwrite_fields:
+                    for key, value in fields.items():
+                        if value in self.overwrite_fields:
+                            fields[key] = self.overwrite_fields[value]
+
+                if field in self.overwrite_values:
+                    fields["values"] = self.overwrite_values[field]["values"]
+
+                output[field].append(error.format(**fields))
+
+    def _flatten_output(self, output):
+        for item in output:
+            if type(output[item]) == dict:
+                self._flatten_output(output[item])
+                continue
+            for error in output[item]:
+                self._flat_list.append(error)
 
     @staticmethod
     def valid_email(email) -> bool:
