@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Union, List
 
 from spotlight import errors as err
@@ -101,7 +102,7 @@ class Validator:
 
          """
 
-        self._output = input_rules.copy()
+        self._output = deepcopy(input_rules)
         self._validate_input(input_, input_rules)
         self._clean_output(self._output)
 
@@ -118,9 +119,13 @@ class Validator:
             return
 
         # Transform input to dictionary
-        if not isinstance(input_, dict):
+        if not isinstance(input_, dict) and not isinstance(input_, list):
             input_ = input_.__dict__
 
+        if type(input_) is list:
+            for item in input_:
+                self._validate_input(item, input_rules)
+            return
         # Iterate over fields
         for field in input_rules:
             if type(input_rules.get(field)) is dict:
