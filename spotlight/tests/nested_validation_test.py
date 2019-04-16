@@ -12,17 +12,15 @@ class NestedValidationTest(ValidatorTest):
         rules = {"nested": {"test": "max:5|email"}, "non_nested": "max:1"}
         input_values = {"nested": {"test": "123456"}, "non_nested": "12"}
         expected = {
-            "nested": {
-                "test": [
-                    errs.MAX_STRING_ERROR.format(field="test", max=5),
-                    errs.INVALID_EMAIL_ERROR,
-                ]
-            },
+            "nested.test": [
+                errs.MAX_STRING_ERROR.format(field="test", max=5),
+                errs.INVALID_EMAIL_ERROR,
+            ],
             "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
 
         errors = self.validator.validate(input_values, rules)
-
+        print(errors)
         self.assertEqual(expected, errors)
 
     def test_double_nested_validation_expect_error(self):
@@ -35,15 +33,13 @@ class NestedValidationTest(ValidatorTest):
             "non_nested": "12",
         }
         expected = {
-            "nested": {
-                "test": [
-                    errs.MAX_STRING_ERROR.format(field="test", max=5),
-                    errs.INVALID_EMAIL_ERROR,
-                ],
-                "double_nested": {
-                    "test2": [errs.MAX_STRING_ERROR.format(field="test2", max=2)]
-                },
-            },
+            "nested.test": [
+                errs.MAX_STRING_ERROR.format(field="test", max=5),
+                errs.INVALID_EMAIL_ERROR,
+            ],
+            "nested.double_nested.test2": [
+                errs.MAX_STRING_ERROR.format(field="test2", max=2)
+            ],
             "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
 
@@ -61,21 +57,18 @@ class NestedValidationTest(ValidatorTest):
             "non_nested": "12",
         }
         new_message = "Hey! The {field} field has to be at least {max} chars!"
-        messages = {"test2.max": new_message}
+        messages = {"nested.double_nested.test2.max": new_message}
         expected = {
-            "nested": {
-                "test": [
-                    errs.MAX_STRING_ERROR.format(field="test", max=5),
-                    errs.INVALID_EMAIL_ERROR,
-                ],
-                "double_nested": {"test2": [new_message.format(field="test2", max=2)]},
-            },
+            "nested.test": [
+                errs.MAX_STRING_ERROR.format(field="test", max=5),
+                errs.INVALID_EMAIL_ERROR,
+            ],
+            "nested.double_nested.test2": [new_message.format(field="test2", max=2)],
             "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
         self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
-
         self.assertEqual(expected, errors)
 
     def test_double_nested_validation_custom_field_expect_error(self):
@@ -87,18 +80,16 @@ class NestedValidationTest(ValidatorTest):
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
-        fields = {"test2": "custom"}
+        fields = {"nested.double_nested.test2": "custom"}
         expected = {
-            "nested": {
-                "test": [
-                    errs.MAX_STRING_ERROR.format(field="test", max=5),
-                    errs.INVALID_EMAIL_ERROR,
-                ],
-                "double_nested": {
-                    "test2": [errs.MAX_STRING_ERROR.format(field="custom", max=2)]
-                },
-            },
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "nested.test.double_nested.test2": [
+                errs.MAX_STRING_ERROR.format(field="custom", max=2)
+            ],
+            "nested.test": [
+                errs.MAX_STRING_ERROR.format(field="test", max=5),
+                errs.INVALID_EMAIL_ERROR,
+            ],
+            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)]
         }
         self.validator.overwrite_fields = fields
 
@@ -119,17 +110,15 @@ class NestedValidationTest(ValidatorTest):
             "non_nested": "12",
         }
         new_values = "piet, henk, jan"
-        values = {"test2": {"values": new_values}}
+        values = {"nested.double_nested.test2": {"values": new_values}}
         expected = {
-            "nested": {
-                "test": [
-                    errs.MAX_STRING_ERROR.format(field="test", max=5),
-                    errs.INVALID_EMAIL_ERROR,
-                ],
-                "double_nested": {
-                    "test2": [errs.IN_ERROR.format(field="test2", values=new_values)]
-                },
-            },
+            "nested.test": [
+                errs.MAX_STRING_ERROR.format(field="test", max=5),
+                errs.INVALID_EMAIL_ERROR,
+            ],
+            "nested.double_nested.test2": [
+                errs.IN_ERROR.format(field="test2", values=new_values)
+            ],
             "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
         self.validator.overwrite_values = values
@@ -141,7 +130,7 @@ class NestedValidationTest(ValidatorTest):
     def test_nested_validation_with_nested_required_field_expect_error(self):
         rules = {"nested": {"test": "required"}}
         input_values = {"nested": {}}
-        expected = {"nested": {"test": [errs.REQUIRED_ERROR.format(field="test")]}}
+        expected = {"nested.test": [errs.REQUIRED_ERROR.format(field="test")]}
 
         errors = self.validator.validate(input_values, rules)
 
@@ -151,12 +140,10 @@ class NestedValidationTest(ValidatorTest):
         rules = {"nested": {"test": "max:5|email"}}
         input_values = {"nested": {"test": "123456"}}
         expected = {
-            "nested": {
-                "test": [
+            "nested.test": [
                     errs.MAX_STRING_ERROR.format(field="test", max=5),
                     errs.INVALID_EMAIL_ERROR,
                 ]
-            }
         }
 
         errors = self.validator.validate(input_values, rules)
@@ -176,7 +163,7 @@ class NestedValidationTest(ValidatorTest):
             "non_nested": "12",
         }
         new_values = "piet, henk, jan"
-        values = {"test2": {"values": new_values}}
+        values = {"nested.double_nested.test2": {"values": new_values}}
         expected = [
             errs.MAX_STRING_ERROR.format(field="test", max=5),
             errs.INVALID_EMAIL_ERROR,
@@ -219,7 +206,7 @@ class NestedValidationTest(ValidatorTest):
     def test_nested_validation_with_filled_field_and_no_input_expect_error(self):
         rules = {"nested": {"test": "filled"}}
         input_values = {"nested": {"test": None}}
-        expected = {"nested": {"test": [errs.FILLED_ERROR.format(field="test")]}}
+        expected = {"nested.test": [errs.FILLED_ERROR.format(field="test")]}
 
         errors = self.validator.validate(input_values, rules)
 

@@ -102,9 +102,9 @@ class Validator:
 
          """
 
-        self._output = deepcopy(input_rules)
+        self._output = {}
         self._validate_input(input_, input_rules)
-        self._clean_output(self._output)
+        # self._clean_output(self._output)
 
         if flat:
             self._flat_list = []
@@ -114,7 +114,7 @@ class Validator:
 
         return self._output
 
-    def _validate_input(self, input_: Union[dict, object], input_rules: dict):
+    def _validate_input(self, input_: Union[dict, object], input_rules: dict, parent = None):
         if input_ is None:
             return
 
@@ -130,7 +130,12 @@ class Validator:
         for field in input_rules:
             if type(input_rules.get(field)) is dict:
                 if field in input_:
-                    self._validate_input(input_[field], input_rules.get(field))
+                    if parent is not None:
+                        parent = parent + "." + field
+                    else:
+                        parent = field
+                    self._validate_input(input_[field], input_rules.get(field),parent)
+                    parent = None
                 continue
 
             rules = input_rules.get(field).split("|")
@@ -161,9 +166,13 @@ class Validator:
 
                             # If rule didn't pass, add error
                             if not passed:
+                                if parent is not None:
+                                    complete_field = parent+"."+field
+                                else:
+                                    complete_field = field
                                 self._add_error(
                                     rule=rule_name,
-                                    field=field,
+                                    field=complete_field,
                                     error=matched_rule.message(),
                                     fields=matched_rule.message_fields,
                                 )
@@ -206,33 +215,29 @@ class Validator:
         return rule in self._implicit_rules
 
     def _add_error(self, rule, field, error, fields=None):
-        self._add_error_to_output(field, rule, error, self._output, fields)
+        error = self.create_error(field, error,fields,rule)
+        if field in self._output:
+            self._output[field].append(error)
+        else:
+            self._output[field] = [error]
 
-    def _add_error_to_output(self, field, rule, error, output, fields):
-        for item in output:
-            if type(output[item]) is dict:
-                self._add_error_to_output(field, rule, error, output[item], fields)
+    def create_error(self, field, error,fields,rule):
+        if field in self.overwrite_messages:
+            error = self.overwrite_messages[field]
 
-            if item == field:
-                if type(output[field]) is str:
-                    output[field] = []
+        combined_field = field + "." + rule
+        if combined_field in self.overwrite_messages:
+            error = self.overwrite_messages[combined_field]
 
-                if field in self.overwrite_messages:
-                    error = self.overwrite_messages[field]
-
-                combined_field = field + "." + rule
-                if combined_field in self.overwrite_messages:
-                    error = self.overwrite_messages[combined_field]
-
+        if field in self.overwrite_fields:
+            for key, value in fields.items():
                 if field in self.overwrite_fields:
-                    for key, value in fields.items():
-                        if value in self.overwrite_fields:
-                            fields[key] = self.overwrite_fields[value]
+                    fields[key] = self.overwrite_fields[field]
 
-                if field in self.overwrite_values:
-                    fields["values"] = self.overwrite_values[field]["values"]
+        if field in self.overwrite_values:
+            fields["values"] = self.overwrite_values[field]["values"]
 
-                output[field].append(error.format(**fields))
+        return error.format(**fields)
 
     def _flatten_output(self, output):
         for item in output:
