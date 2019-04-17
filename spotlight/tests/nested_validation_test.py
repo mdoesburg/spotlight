@@ -22,7 +22,6 @@ class NestedValidationTest(ValidatorTest):
         }
 
         errors = self.validator.validate(input_values, rules)
-        print(errors)
         self.assertEqual(expected, errors)
 
     def test_double_nested_validation_expect_error(self):
@@ -84,7 +83,7 @@ class NestedValidationTest(ValidatorTest):
         }
         fields = {"nested.double_nested.test2": "custom"}
         expected = {
-            "nested.test.double_nested.test2": [
+            "nested.double_nested.test2": [
                 errs.MAX_STRING_ERROR.format(field="custom", max=2)
             ],
             "nested.test": [

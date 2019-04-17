@@ -1,9 +1,7 @@
-from copy import deepcopy
 from typing import Union, List
 
 from spotlight import errors as err
 from spotlight import rules as rls
-
 
 class Validator:
     """
@@ -104,7 +102,6 @@ class Validator:
 
         self._output = {}
         self._validate_input(input_, input_rules)
-        # self._clean_output(self._output)
 
         if flat:
             self._flat_list = []
@@ -123,8 +120,9 @@ class Validator:
             input_ = input_.__dict__
 
         if type(input_) is list:
-            for item in input_:
-                self._validate_input(item, input_rules)
+            for index, item in enumerate(input_):
+                index_parent = parent+"."+str(index)
+                self._validate_input(item, input_rules,parent=index_parent)
             return
         # Iterate over fields
         for field in input_rules:
@@ -183,25 +181,6 @@ class Validator:
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
 
-    def _clean_output(self, output):
-        keys_to_be_removed = []
-        for item in output:
-            if type(output[item]) is dict:
-                self._clean_output(output[item])
-            elif type(output[item]) is str:
-                keys_to_be_removed.append(item)
-
-        for key in keys_to_be_removed:
-            output.pop(key)
-
-        keys_to_be_removed = []
-        for key in output:
-            if len(output.get(key)) == 0:
-                keys_to_be_removed.append(key)
-
-        for key in keys_to_be_removed:
-            output.pop(key)
-
     def _is_validatable(self, rule, field, input_):
         return self._present_or_rule_is_implicit(rule, field, input_)
 
@@ -222,22 +201,36 @@ class Validator:
             self._output[field] = [error]
 
     def create_error(self, field, error,fields,rule):
-        if field in self.overwrite_messages:
-            error = self.overwrite_messages[field]
+        wildcard_field = self._convert_field_to_wildcard_field(field)
+        if wildcard_field in self.overwrite_messages:
+            error = self.overwrite_messages[wildcard_field]
 
-        combined_field = field + "." + rule
+        combined_field = wildcard_field + "." + rule
+
         if combined_field in self.overwrite_messages:
             error = self.overwrite_messages[combined_field]
 
-        if field in self.overwrite_fields:
-            for key, value in fields.items():
-                if field in self.overwrite_fields:
-                    fields[key] = self.overwrite_fields[field]
+        if wildcard_field in self.overwrite_fields:
 
-        if field in self.overwrite_values:
-            fields["values"] = self.overwrite_values[field]["values"]
+            for key, value in fields.items():
+                if wildcard_field in self.overwrite_fields:
+
+                    fields[key] = self.overwrite_fields[wildcard_field]
+
+        if wildcard_field in self.overwrite_values:
+            fields["values"] = self.overwrite_values[wildcard_field]["values"]
 
         return error.format(**fields)
+
+    def _convert_field_to_wildcard_field(self, field):
+        wildcard_field = field
+        for index, char in enumerate(field):
+            if char.isdigit():
+                if field[index-1] == "." and field[index+1] == ".":
+                    wildcard_field_list = list(wildcard_field)
+                    wildcard_field_list[index] = "*"
+                    wildcard_field = "".join(wildcard_field_list)
+        return wildcard_field
 
     def _flatten_output(self, output):
         for item in output:
@@ -298,3 +291,5 @@ class Validator:
     def _setup_plugins(self, plugins: List[Plugin]):
         for plugin in plugins:
             self.register_rules(plugin.rules())
+
+

@@ -17,19 +17,12 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = {
-            "list": {
-                "test": [
-                    "The test field cannot be longer than 2 characters.",
-                    "The test field cannot be longer than 2 characters.",
-                ],
-                "test2": [
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                ],
-            }
+            "list.0.test2": ["The test2 field has to be at least 2 characters."],
+            "list.1.test": ["The test field cannot be longer than 2 characters."],
+            "list.1.test2": ["The test2 field has to be at least 2 characters."],
+            "list.2.test": ["The test field cannot be longer than 2 characters."],
+            "list.2.test2": ["The test2 field has to be at least 2 characters."],
         }
-
         errors = self.validator.validate(input_values, rules)
         self.assertEqual(expected, errors)
 
@@ -43,10 +36,10 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = [
-            "The test field cannot be longer than 2 characters.",
+            "The test2 field has to be at least 2 characters.",
             "The test field cannot be longer than 2 characters.",
             "The test2 field has to be at least 2 characters.",
-            "The test2 field has to be at least 2 characters.",
+            "The test field cannot be longer than 2 characters.",
             "The test2 field has to be at least 2 characters.",
         ]
 
@@ -63,21 +56,15 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = {
-            "list": {
-                "test": [
-                    "Hey! The test field has to be at least 2 chars!",
-                    "Hey! The test field has to be at least 2 chars!",
-                ],
-                "test2": [
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                ],
-            }
+                "list.0.test2": ["The test2 field has to be at least 2 characters."],
+                "list.1.test": ["Hey! The test field has to be at least 2 chars!"],
+                "list.1.test2": ["The test2 field has to be at least 2 characters."],
+                "list.2.test": ["Hey! The test field has to be at least 2 chars!"],
+                "list.2.test2": ["The test2 field has to be at least 2 characters."],
         }
 
         new_message = "Hey! The {field} field has to be at least {max} chars!"
-        messages = {"test.max": new_message}
+        messages = {"list.*.test.max": new_message}
         self.validator.overwrite_messages = messages
 
         errors = self.validator.validate(input_values, rules)
@@ -93,20 +80,14 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = {
-            "list": {
-                "test": [
-                    "The test field cannot be longer than 2 characters.",
-                    "The test field cannot be longer than 2 characters.",
-                ],
-                "test2": [
-                    "The custom field has to be at least 2 characters.",
-                    "The custom field has to be at least 2 characters.",
-                    "The custom field has to be at least 2 characters.",
-                ],
-            }
+            "list.0.test2": ["The custom field has to be at least 2 characters."],
+            "list.1.test": ["The test field cannot be longer than 2 characters."],
+            "list.1.test2": ["The custom field has to be at least 2 characters."],
+            "list.2.test": ["The test field cannot be longer than 2 characters."],
+            "list.2.test2": ["The custom field has to be at least 2 characters."],
         }
 
-        fields = {"test2": "custom"}
+        fields = {"list.*.test2": "custom"}
         self.validator.overwrite_fields = fields
 
         errors = self.validator.validate(input_values, rules)
@@ -122,24 +103,21 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = {
-            "list": {
-                "test": [
-                    "The test field cannot be longer than 2 characters.",
-                    "The test field cannot be longer than 2 characters.",
-                ],
-                "test2": [
-                    "The test2 field must be one of the following values: "
-                    "piet, henk, jan.",
-                    "The test2 field must be one of the following values: "
-                    "piet, henk, jan.",
-                    "The test2 field must be one of the following values: "
-                    "piet, henk, jan.",
-                ],
-            }
+            "list.0.test2": [
+                "The test2 field must be one of the following values: piet, henk, jan."
+            ],
+            "list.1.test": ["The test field cannot be longer than 2 characters."],
+            "list.1.test2": [
+                "The test2 field must be one of the following values: piet, henk, jan."
+            ],
+            "list.2.test": ["The test field cannot be longer than 2 characters."],
+            "list.2.test2": [
+                "The test2 field must be one of the following values: piet, henk, jan."
+            ],
         }
 
         new_values = "piet, henk, jan"
-        values = {"test2": {"values": new_values}}
+        values = {"list.*.test2": {"values": new_values}}
         self.validator.overwrite_values = values
 
         errors = self.validator.validate(input_values, rules)
@@ -155,17 +133,11 @@ class ListValidationTest(ValidatorTest):
             ]
         }
         expected = {
-            "list": {
-                "test": [
-                    "The test field is required.",
-                    "The test field cannot be longer than 2 characters.",
-                ],
-                "test2": [
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                    "The test2 field has to be at least 2 characters.",
-                ],
-            }
+                "list.0.test2": ["The test2 field has to be at least 2 characters."],
+                "list.1.test": ["The test field is required."],
+                "list.1.test2": ["The test2 field has to be at least 2 characters."],
+                "list.2.test": ["The test field cannot be longer than 2 characters."],
+                "list.2.test2": ["The test2 field has to be at least 2 characters."],
         }
 
         errors = self.validator.validate(input_values, rules)
@@ -183,13 +155,9 @@ class ListValidationTest(ValidatorTest):
         rules = {"list": {"test": "required|max:2", "test2": "min:2"}}
         input_values = {"list": [{}, {}, {}]}
         expected = {
-            "list": {
-                "test": [
-                    "The test field is required.",
-                    "The test field is required.",
-                    "The test field is required.",
-                ]
-            }
+            "list.0.test": ["The test field is required."],
+            "list.1.test": ["The test field is required."],
+            "list.2.test": ["The test field is required."],
         }
         errors = self.validator.validate(input_values, rules)
         self.assertEqual(expected, errors)
