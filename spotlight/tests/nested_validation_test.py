@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from spotlight.tests.validator_test import ValidatorTest
 from spotlight import errors as errs
 
@@ -81,7 +79,7 @@ class NestedValidationTest(ValidatorTest):
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
-        fields = {"nested.double_nested.test2": "custom"}
+        fields = {"test2": "custom"}
         expected = {
             "nested.double_nested.test2": [
                 errs.MAX_STRING_ERROR.format(field="custom", max=2)

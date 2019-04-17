@@ -153,7 +153,6 @@ class FilledRule(DependentRule):
 
     def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
-
         if field in input_ and empty(value):
             return False
 

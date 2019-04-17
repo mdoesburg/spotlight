@@ -87,7 +87,7 @@ class ListValidationTest(ValidatorTest):
             "list.2.test2": ["The custom field has to be at least 2 characters."],
         }
 
-        fields = {"list.*.test2": "custom"}
+        fields = {"test2": "custom"}
         self.validator.overwrite_fields = fields
 
         errors = self.validator.validate(input_values, rules)

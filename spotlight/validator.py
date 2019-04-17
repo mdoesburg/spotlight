@@ -153,6 +153,7 @@ class Validator:
                             # Execute correct validation method
                             value = input_.get(field)
 
+
                             # Rule
                             if isinstance(matched_rule, rls.Rule):
                                 passed = matched_rule.passes(field, value)
@@ -165,12 +166,13 @@ class Validator:
                             # If rule didn't pass, add error
                             if not passed:
                                 if parent is not None:
-                                    complete_field = parent+"."+field
+                                    complete_field = parent + "." + field
                                 else:
                                     complete_field = field
                                 self._add_error(
                                     rule=rule_name,
-                                    field=complete_field,
+                                    field=field,
+                                    complete_field=complete_field,
                                     error=matched_rule.message(),
                                     fields=matched_rule.message_fields,
                                 )
@@ -193,15 +195,15 @@ class Validator:
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
 
-    def _add_error(self, rule, field, error, fields=None):
-        error = self.create_error(field, error,fields,rule)
-        if field in self._output:
-            self._output[field].append(error)
+    def _add_error(self, rule, field, complete_field, error, fields=None):
+        error = self.create_error(field, error, complete_field, fields,rule)
+        if complete_field in self._output:
+            self._output[complete_field].append(error)
         else:
-            self._output[field] = [error]
+            self._output[complete_field] = [error]
 
-    def create_error(self, field, error,fields,rule):
-        wildcard_field = self._convert_field_to_wildcard_field(field)
+    def create_error(self, field, error, complete_field, fields,rule):
+        wildcard_field = self._convert_field_to_wildcard_field(complete_field)
         if wildcard_field in self.overwrite_messages:
             error = self.overwrite_messages[wildcard_field]
 
@@ -210,12 +212,10 @@ class Validator:
         if combined_field in self.overwrite_messages:
             error = self.overwrite_messages[combined_field]
 
-        if wildcard_field in self.overwrite_fields:
-
+        for overwrite_field in self.overwrite_fields:
             for key, value in fields.items():
-                if wildcard_field in self.overwrite_fields:
-
-                    fields[key] = self.overwrite_fields[wildcard_field]
+                if overwrite_field == value:
+                    fields[key] = self.overwrite_fields[overwrite_field]
 
         if wildcard_field in self.overwrite_values:
             fields["values"] = self.overwrite_values[wildcard_field]["values"]
