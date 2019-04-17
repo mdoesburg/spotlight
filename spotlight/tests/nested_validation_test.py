@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from spotlight.tests.validator_test import ValidatorTest
 from spotlight import errors as errs
 
@@ -112,12 +114,12 @@ class NestedValidationTest(ValidatorTest):
         new_values = "piet, henk, jan"
         values = {"nested.double_nested.test2": {"values": new_values}}
         expected = {
+            "nested.double_nested.test2": [
+                errs.IN_ERROR.format(field="test2", values=new_values)
+            ],
             "nested.test": [
                 errs.MAX_STRING_ERROR.format(field="test", max=5),
                 errs.INVALID_EMAIL_ERROR,
-            ],
-            "nested.double_nested.test2": [
-                errs.IN_ERROR.format(field="test2", values=new_values)
             ],
             "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
