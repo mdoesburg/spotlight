@@ -3,6 +3,7 @@ from typing import Union, List
 from spotlight import errors as err
 from spotlight import rules as rls
 
+
 class Validator:
     """
     Creates an instance of the Validator class.
@@ -27,6 +28,7 @@ class Validator:
         self._implicit_rules = []
         self._registered_rules = []
         self._available_rules = {}
+        self._excluded_fields= []
 
         self._setup_default_rules()
         self._setup_plugins(plugins or [])
@@ -59,7 +61,7 @@ class Validator:
             rls.Uuid4Rule(),
             rls.AcceptedRule(),
             rls.StartsWithRule(),
-            rls.DictRule()
+            rls.DictRule(),
         ]
 
     def _setup_rule(self, rule):
@@ -101,6 +103,7 @@ class Validator:
          """
 
         self._output = {}
+        self._excluded_fields = []
         self._validate_input(input_, input_rules)
 
         if flat:
@@ -111,31 +114,13 @@ class Validator:
 
         return self._output
 
-    def _validate_input(self, input_: Union[dict, object], input_rules: dict, parent = None):
-        if input_ is None:
-            return
-
+    def _validate_input(self, input_: Union[dict, object], input_rules: dict):
         # Transform input to dictionary
         if not isinstance(input_, dict) and not isinstance(input_, list):
             input_ = input_.__dict__
 
-        if type(input_) is list:
-            for index, item in enumerate(input_):
-                index_parent = parent+"."+str(index)
-                self._validate_input(item, input_rules,parent=index_parent)
-            return
         # Iterate over fields
         for field in input_rules:
-            if type(input_rules.get(field)) is dict:
-                if field in input_:
-                    if parent is not None:
-                        parent = parent + "." + field
-                    else:
-                        parent = field
-                    self._validate_input(input_[field], input_rules.get(field),parent)
-                    parent = None
-                continue
-
             rules = input_rules.get(field).split("|")
             # Iterate over rules
             for rule in rules:
@@ -150,38 +135,56 @@ class Validator:
                         if rule_name in self._available_rules:
                             matched_rule = self._available_rules.get(rule_name)
 
-                            # Execute correct validation method
-                            value = input_.get(field)
+                            wildcard_locations = self._get_wildcard_locations(field)
 
+                            if len(wildcard_locations) > 0:
+                                index = 0
+                                while True:
+                                    index_field = self._replace_character_at_index(
+                                        field, index, wildcard_locations[0]
+                                    )
+                                    if not index_field in self._excluded_fields:
+                                        try:
+                                            self._validate_input_to_rule(
+                                                index_field,
+                                                input_,
+                                                matched_rule,
+                                                rule_values,
+                                                rule_name,
+                                            )
+                                        except IndexError:
+                                            break
+                                    index = index + 1
 
-                            # Rule
-                            if isinstance(matched_rule, rls.Rule):
-                                passed = matched_rule.passes(field, value)
-                            # Dependent Rule
-                            elif isinstance(matched_rule, rls.DependentRule):
-                                passed = matched_rule.passes(
-                                    field, value, rule_values, input_
+                            elif not field in self._excluded_fields:
+                                self._validate_input_to_rule(
+                                       field, input_, matched_rule, rule_values, rule_name
                                 )
-
-                            # If rule didn't pass, add error
-                            if not passed:
-                                if parent is not None:
-                                    complete_field = parent + "." + field
-                                else:
-                                    complete_field = field
-                                self._add_error(
-                                    rule=rule_name,
-                                    field=field,
-                                    complete_field=complete_field,
-                                    error=matched_rule.message(),
-                                    fields=matched_rule.message_fields,
-                                )
-
-                                # Stop validation
-                                if matched_rule.stop:
-                                    break
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
+
+    def _validate_input_to_rule(
+        self, field, input_, matched_rule, rule_values, rule_name
+    ):
+        # Execute correct validation method
+        value = self._get_value(field, input_)
+        # Rule
+        if isinstance(matched_rule, rls.Rule):
+            passed = matched_rule.passes(field, value)
+        # Dependent Rule
+        elif isinstance(matched_rule, rls.DependentRule):
+            passed = matched_rule.passes(field, value, rule_values, input_)
+        # If rule didn't pass, add error
+        if not passed:
+            self._add_error(
+                rule=rule_name,
+                complete_field=field,
+                error=matched_rule.message(),
+                fields=matched_rule.message_fields,
+            )
+
+            if matched_rule.stop:
+                self._excluded_fields.append(field)
 
     def _is_validatable(self, rule, field, input_):
         return self._present_or_rule_is_implicit(rule, field, input_)
@@ -190,19 +193,30 @@ class Validator:
         return self._validate_present(field, input_) or self._is_implicit(rule)
 
     def _validate_present(self, field, input_):
-        return field in input_ and input_.get(field) is not None
+        wildcard_locations = self._get_wildcard_locations(field)
+        field_list = field.split(".")
+        for wildcard_location in wildcard_locations:
+            field_list[wildcard_location] = "0"
+
+        field = ".".join(field_list)
+
+        value = self._get_value(field, input_)
+        if value is None:
+            return False
+
+        return True
 
     def _is_implicit(self, rule):
         return rule in self._implicit_rules
 
-    def _add_error(self, rule, field, complete_field, error, fields=None):
-        error = self.create_error(field, error, complete_field, fields,rule)
+    def _add_error(self, rule, complete_field, error, fields=None):
+        error = self.create_error(error, complete_field, fields, rule)
         if complete_field in self._output:
             self._output[complete_field].append(error)
         else:
             self._output[complete_field] = [error]
 
-    def create_error(self, field, error, complete_field, fields,rule):
+    def create_error(self, error, complete_field, fields, rule):
         wildcard_field = self._convert_field_to_wildcard_field(complete_field)
         if wildcard_field in self.overwrite_messages:
             error = self.overwrite_messages[wildcard_field]
@@ -214,6 +228,7 @@ class Validator:
 
         for overwrite_field in self.overwrite_fields:
             for key, value in fields.items():
+                value = self._convert_field_to_wildcard_field(value)
                 if overwrite_field == value:
                     fields[key] = self.overwrite_fields[overwrite_field]
 
@@ -223,14 +238,12 @@ class Validator:
         return error.format(**fields)
 
     def _convert_field_to_wildcard_field(self, field):
-        wildcard_field = field
-        for index, char in enumerate(field):
-            if char.isdigit():
-                if field[index-1] == "." and field[index+1] == ".":
-                    wildcard_field_list = list(wildcard_field)
-                    wildcard_field_list[index] = "*"
-                    wildcard_field = "".join(wildcard_field_list)
-        return wildcard_field
+        split_fields = str(field).split(".")
+        if len(split_fields) > 1:
+            for index, field in enumerate(split_fields):
+                if field.isnumeric():
+                    split_fields[index] = "*"
+        return ".".join(split_fields)
 
     def _flatten_output(self, output):
         for item in output:
@@ -239,6 +252,37 @@ class Validator:
                 continue
             for error in output[item]:
                 self._flat_list.append(error)
+
+    def _get_value(self, field, input_):
+        value = input_
+        split_field = field.split(".")
+        try:
+            for key in split_field:
+                if key.isnumeric():
+                    value = value[int(key)]
+                else:
+                    value = value.get(key)
+
+        except AttributeError:
+            return None
+
+        return value
+
+    def _get_wildcard_locations(self, field):
+        split_fields = field.split(".")
+        wildcard_locations = []
+
+        for index, split_field in enumerate(split_fields):
+            if split_field == "*":
+                wildcard_locations.append(index)
+
+        return wildcard_locations
+
+    def _replace_character_at_index(self, field, character, index):
+        split_field = field.split(".")
+        split_field[index] = str(character)
+        index_field = ".".join(split_field)
+        return index_field
 
     @staticmethod
     def valid_email(email) -> bool:
@@ -291,5 +335,3 @@ class Validator:
     def _setup_plugins(self, plugins: List[Plugin]):
         for plugin in plugins:
             self.register_rules(plugin.rules())
-
-

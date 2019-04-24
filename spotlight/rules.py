@@ -141,6 +141,18 @@ class NotWithRule(DependentRule):
         return errors.NOT_WITH_ERROR
 
 
+def field_in_input(field, input_):
+    value = input_
+    split_field = field.split(".")
+    try:
+        for key in split_field:
+            value = value[key]
+    except KeyError:
+        return False
+
+    return True
+
+
 class FilledRule(DependentRule):
     """Not empty when present"""
 
@@ -153,7 +165,7 @@ class FilledRule(DependentRule):
 
     def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
-        if field in input_ and empty(value):
+        if field_in_input(field, input_) and empty(value):
             return False
 
         return True
