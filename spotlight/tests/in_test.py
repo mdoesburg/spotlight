@@ -37,3 +37,31 @@ class InTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs, expected)
+
+    def test_in_rule_with_integer_expect_no_error(self):
+        input_values = {
+            "test": 1
+        }
+        rules = {
+            "test": "in:1,2,3",
+        }
+        expected = None
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
+    def test_in_rule_with_bool_expect_no_error(self):
+        input_values = {
+            "test": True
+        }
+        rules = {
+            "test": "in:true,false",
+        }
+        expected = None
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
