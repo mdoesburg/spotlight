@@ -28,7 +28,7 @@ class Validator:
         self._implicit_rules = []
         self._registered_rules = []
         self._available_rules = {}
-        self._excluded_fields= []
+        self._excluded_fields = []
 
         self._setup_default_rules()
         self._setup_plugins(plugins or [])
@@ -152,13 +152,13 @@ class Validator:
                                                 rule_values,
                                                 rule_name,
                                             )
-                                        except IndexError:
+                                        except (IndexError, TypeError):
                                             break
                                     index = index + 1
 
                             elif not field in self._excluded_fields:
                                 self._validate_input_to_rule(
-                                       field, input_, matched_rule, rule_values, rule_name
+                                    field, input_, matched_rule, rule_values, rule_name
                                 )
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
@@ -168,12 +168,14 @@ class Validator:
     ):
         # Execute correct validation method
         value = self._get_value(field, input_)
+
         # Rule
         if isinstance(matched_rule, rls.Rule):
             passed = matched_rule.passes(field, value)
         # Dependent Rule
         elif isinstance(matched_rule, rls.DependentRule):
             passed = matched_rule.passes(field, value, rule_values, input_)
+
         # If rule didn't pass, add error
         if not passed:
             self._add_error(
@@ -200,8 +202,11 @@ class Validator:
 
         field = ".".join(field_list)
 
-        value = self._get_value(field, input_)
-        if value is None:
+        try:
+            value = self._get_value(field, input_)
+            if value is None:
+                return False
+        except (TypeError, IndexError, KeyError):
             return False
 
         return True
@@ -210,13 +215,13 @@ class Validator:
         return rule in self._implicit_rules
 
     def _add_error(self, rule, complete_field, error, fields=None):
-        error = self.create_error(error, complete_field, fields, rule)
+        error = self._create_error(error, complete_field, fields, rule)
         if complete_field in self._output:
             self._output[complete_field].append(error)
         else:
             self._output[complete_field] = [error]
 
-    def create_error(self, error, complete_field, fields, rule):
+    def _create_error(self, error, complete_field, fields, rule):
         wildcard_field = self._convert_field_to_wildcard_field(complete_field)
         if wildcard_field in self.overwrite_messages:
             error = self.overwrite_messages[wildcard_field]
@@ -237,12 +242,14 @@ class Validator:
 
         return error.format(**fields)
 
-    def _convert_field_to_wildcard_field(self, field):
+    @staticmethod
+    def _convert_field_to_wildcard_field(field):
         split_fields = str(field).split(".")
         if len(split_fields) > 1:
             for index, field in enumerate(split_fields):
                 if field.isnumeric():
                     split_fields[index] = "*"
+
         return ".".join(split_fields)
 
     def _flatten_output(self, output):
@@ -253,7 +260,8 @@ class Validator:
             for error in output[item]:
                 self._flat_list.append(error)
 
-    def _get_value(self, field, input_):
+    @staticmethod
+    def _get_value(field, input_):
         value = input_
         split_field = field.split(".")
         try:
@@ -262,13 +270,13 @@ class Validator:
                     value = value[int(key)]
                 else:
                     value = value.get(key)
-
         except AttributeError:
             return None
 
         return value
 
-    def _get_wildcard_locations(self, field):
+    @staticmethod
+    def _get_wildcard_locations(field):
         split_fields = field.split(".")
         wildcard_locations = []
 
@@ -278,10 +286,12 @@ class Validator:
 
         return wildcard_locations
 
-    def _replace_character_at_index(self, field, character, index):
+    @staticmethod
+    def _replace_character_at_index(field, character, index):
         split_field = field.split(".")
         split_field[index] = str(character)
         index_field = ".".join(split_field)
+
         return index_field
 
     @staticmethod
