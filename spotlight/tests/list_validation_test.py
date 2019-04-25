@@ -88,9 +88,13 @@ class ListValidationTest(ValidatorTest):
         }
         expected = {
             "list.0.test2": ["The custom field has to be at least 2 characters."],
-            "list.1.test": ["The list.1.test field cannot be longer than 2 characters."],
+            "list.1.test": [
+                "The list.1.test field cannot be longer than 2 characters."
+            ],
             "list.1.test2": ["The custom field has to be at least 2 characters."],
-            "list.2.test": ["The list.2.test field cannot be longer than 2 characters."],
+            "list.2.test": [
+                "The list.2.test field cannot be longer than 2 characters."
+            ],
             "list.2.test2": ["The custom field has to be at least 2 characters."],
         }
         fields = {"list.*.test2": "custom"}
@@ -147,7 +151,9 @@ class ListValidationTest(ValidatorTest):
             "list.0.test2": ["The list.0.test2 field has to be at least 2 characters."],
             "list.1.test": ["The list.1.test field is required."],
             "list.1.test2": ["The list.1.test2 field has to be at least 2 characters."],
-            "list.2.test": ["The list.2.test field cannot be longer than 2 characters."],
+            "list.2.test": [
+                "The list.2.test field cannot be longer than 2 characters."
+            ],
             "list.2.test2": ["The list.2.test2 field has to be at least 2 characters."],
         }
 
@@ -184,26 +190,14 @@ class ListValidationTest(ValidatorTest):
             "hello.test": "required|string",
             "players.*.name": "required|min:3|max:25",
             "players.*.unit": "required|dict",
-            "players.*.unit.name": "required|string|max:3"
+            "players.*.unit.name": "required|string|max:3",
         }
         input_values = {
-            "hello": {
-                "test": "piet"
-            },
+            "hello": {"test": "piet"},
             "players": [
-                {
-                    "name": "Test 1",
-                    "unit": {
-                        "name": "hoi"
-                    }
-                },
-                {
-                    "name": "Test 2",
-                    "unit": {
-                        "name": "hoi"
-                    }
-                }
-            ]
+                {"name": "Test 1", "unit": {"name": "hoi"}},
+                {"name": "Test 2", "unit": {"name": "hoi"}},
+            ],
         }
         expected = {}
 
@@ -232,7 +226,7 @@ class ListValidationTest(ValidatorTest):
     def test_list_validation_with_bool_expect_error(self):
         rules = {"list": "required|list"}
         input_values = {"list": True}
-        expected = {'list': ['The list field must be a list.']}
+        expected = {"list": ["The list field must be a list."]}
 
         errors = self.validator.validate(input_values, rules)
 
