@@ -75,6 +75,27 @@ validator = Validator()
 errors = validator.validate(input_, rules)
 ```
 
+List validation:
+```python
+rules = {
+    "players": "required|list|min:2",
+    "players.*.username": "required"
+}
+
+input_ = {
+    "players": [
+        {
+            "username": "Player 1"
+        },
+        {
+            "username": "Player 2"
+        }
+    ]
+}
+
+validator = Validator()
+errors = validator.validate(input_, rules)
+```
 
 ### Direct Validation
 Sometimes there is a need for quick and simple validation, without having to create a rule set. The Validator class exposes several static methods that can be used for direct validation.

@@ -2,7 +2,7 @@ import re
 
 
 def camel_to_snake(s):
-    return re.compile(r'(?!^)(?<!_)([A-Z])').sub(r'_\1', s).lower()
+    return re.compile(r"(?!^)(?<!_)([A-Z])").sub(r"_\1", s).lower()
 
 
 def regex_match(regex, value):
@@ -21,12 +21,19 @@ def equals(val1, val2):
 
 def missing(input_, field):
     # Field is missing from input
-    if field not in input_:
+    value = input_
+    split_field = field.split(".")
+    try:
+        for key in split_field:
+            if key.isnumeric():
+                value = value[int(key)]
+            else:
+                value = value[key]
+    except KeyError:
+
         return True
 
-    val = input_.get(field)
-
-    return empty(val)
+    return empty(value)
 
 
 def empty(val):

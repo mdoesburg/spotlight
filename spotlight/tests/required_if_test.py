@@ -121,3 +121,18 @@ class RequiredIfTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs, expected)
+
+    def test_required_if_rule_with_integer_expect_no_error(self):
+        input_values = {
+            "test1": 1,
+            "test2": "I am required"
+        }
+        rules = {
+            "test2": "required_if:test1,1"
+        }
+        expected = None
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)

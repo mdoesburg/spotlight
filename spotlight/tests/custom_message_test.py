@@ -194,4 +194,4 @@ class CustomMessageTest(ValidatorTest):
         errors = self.validator.validate(input_values, rules)
         errs = errors.get("credit_card_number")
 
-        self.assertEqual(errs[0], expected)
+        self.assertEqual(expected, errs[0])
