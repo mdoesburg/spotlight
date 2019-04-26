@@ -28,7 +28,7 @@ class Validator:
         self._implicit_rules = []
         self._registered_rules = []
         self._available_rules = {}
-        self._excluded_fields= []
+        self._excluded_fields = []
 
         self._setup_default_rules()
         self._setup_plugins(plugins or [])
@@ -158,7 +158,7 @@ class Validator:
 
                             elif not field in self._excluded_fields:
                                 self._validate_input_to_rule(
-                                       field, input_, matched_rule, rule_values, rule_name
+                                    field, input_, matched_rule, rule_values, rule_name
                                 )
                         else:
                             raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
@@ -258,6 +258,8 @@ class Validator:
         split_field = field.split(".")
         try:
             for key in split_field:
+                if not isinstance(value, dict) and not isinstance(value, list):
+                    value = value.__dict__
                 if key.isnumeric():
                     value = value[int(key)]
                 else:
