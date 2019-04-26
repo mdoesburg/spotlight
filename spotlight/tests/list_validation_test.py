@@ -231,3 +231,25 @@ class ListValidationTest(ValidatorTest):
         errors = self.validator.validate(input_values, rules)
 
         self.assertEqual(expected, errors)
+
+    def test_list_validation_without_key_returns_no_error(self):
+        rules = {
+            "start_at": "string|min:10",
+            "end_at": "string|min:10",
+            "ticket_universe.size": "integer",
+            "ticket_universe.positions.*": "string"
+        }
+        input_values = {
+            "start_at": "2017:03:22",
+            "end_at": "2028:03:26",
+            "ticket_universe": {
+                "size": 99,
+                "positions": ["fixed:A", "ranged:1:2", "binary", "alpha", "numeric"]
+            }
+        }
+        expected = {
+        }
+        errors = self.validator.validate(input_values, rules)
+        self.assertEqual(expected, errors)
+
+

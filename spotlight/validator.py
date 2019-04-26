@@ -266,6 +266,8 @@ class Validator:
         split_field = field.split(".")
         try:
             for key in split_field:
+                if not isinstance(value, dict) and not isinstance(value, list):
+                    value = value.__dict__
                 if key.isnumeric():
                     value = value[int(key)]
                 else:
