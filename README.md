@@ -247,7 +247,7 @@ string
 ### integer
 The field under validation must be an integer.
 ```
-string
+integer
 ```
 
 ### boolean
