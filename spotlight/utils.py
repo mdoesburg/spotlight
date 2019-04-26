@@ -23,14 +23,16 @@ def missing(input_, field):
     # Field is missing from input
     value = input_
     split_field = field.split(".")
+
     try:
         for key in split_field:
+            if not isinstance(value, dict) and not isinstance(value, list):
+                value = value.__dict__
             if key.isnumeric():
                 value = value[int(key)]
             else:
                 value = value[key]
     except KeyError:
-
         return True
 
     return empty(value)
