@@ -258,6 +258,7 @@ class MinRule(DependentRule):
     def passes(self, field, value, rule_values, input_) -> bool:
         _min = rule_values[0]
         self.message_fields = dict(field=field, min=_min)
+        self.error = errors.MIN_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MIN_STRING_ERROR
@@ -266,10 +267,8 @@ class MinRule(DependentRule):
             self.error = errors.MIN_LIST_ERROR
             return len(value) >= int(_min)
         elif IntegerRule.valid_integer(value):
-            self.error = errors.MIN_INTEGER_ERROR
             return value >= int(_min)
         elif FloatRule.valid_float(value):
-            self.error = errors.MIN_FLOAT_ERROR
             return value >= float(_min)
 
         return False
@@ -290,6 +289,7 @@ class MaxRule(DependentRule):
     def passes(self, field, value, rule_values, input_) -> bool:
         _max = rule_values[0]
         self.message_fields = dict(field=field, max=_max)
+        self.error = errors.MAX_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MAX_STRING_ERROR
@@ -298,10 +298,8 @@ class MaxRule(DependentRule):
             self.error = errors.MAX_LIST_ERROR
             return len(value) <= int(_max)
         elif IntegerRule.valid_integer(value):
-            self.error = errors.MAX_INTEGER_ERROR
             return value <= int(_max)
         elif FloatRule.valid_float(value):
-            self.error = errors.MAX_FLOAT_ERROR
             return value <= float(_max)
 
         return False

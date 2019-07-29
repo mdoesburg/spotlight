@@ -41,7 +41,7 @@ class MaxTest(ValidatorTest):
         input_values = {
             "test": 6
         }
-        expected = err.MAX_INTEGER_ERROR.format(field=self.field, max=5)
+        expected = err.MAX_ERROR.format(field=self.field, max=5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(self.field)
@@ -55,7 +55,7 @@ class MaxTest(ValidatorTest):
         input_values = {
             "test": 5.6
         }
-        expected = err.MAX_FLOAT_ERROR.format(field=self.field, max=5.5)
+        expected = err.MAX_ERROR.format(field=self.field, max=5.5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(self.field)

@@ -67,7 +67,7 @@ class MinTest(ValidatorTest):
         input_values = {
             "test": 4
         }
-        expected = err.MIN_INTEGER_ERROR.format(field=self.field, min=5)
+        expected = err.MIN_ERROR.format(field=self.field, min=5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(self.field)
@@ -81,7 +81,7 @@ class MinTest(ValidatorTest):
         input_values = {
             "test": 0.4
         }
-        expected = err.MIN_FLOAT_ERROR.format(field=self.field, min=0.5)
+        expected = err.MIN_ERROR.format(field=self.field, min=0.5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(self.field)
