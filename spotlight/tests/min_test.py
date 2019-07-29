@@ -67,7 +67,21 @@ class MinTest(ValidatorTest):
         input_values = {
             "test": 4
         }
-        expected = err.MIN_INTEGER_ERROR.format(field=self.field, min=5)
+        expected = err.MIN_ERROR.format(field=self.field, min=5)
+
+        errors = self.validator.validate(input_values, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)
+
+    def test_min_rule_with_invalid_float_expect_error(self):
+        rules = {
+            "test": "min:0.5"
+        }
+        input_values = {
+            "test": 0.4
+        }
+        expected = err.MIN_ERROR.format(field=self.field, min=0.5)
 
         errors = self.validator.validate(input_values, rules)
         errs = errors.get(self.field)

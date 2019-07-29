@@ -141,18 +141,6 @@ class NotWithRule(DependentRule):
         return errors.NOT_WITH_ERROR
 
 
-def field_in_input(field, input_):
-    value = input_
-    split_field = field.split(".")
-    try:
-        for key in split_field:
-            value = value[key]
-    except KeyError:
-        return False
-
-    return True
-
-
 class FilledRule(DependentRule):
     """Not empty when present"""
 
@@ -165,7 +153,19 @@ class FilledRule(DependentRule):
 
     def passes(self, field, value, rule_values, input_) -> bool:
         self.message_fields = dict(field=field)
-        if field_in_input(field, input_) and empty(value):
+        if self._field_in_input(field, input_) and empty(value):
+            return False
+
+        return True
+
+    @staticmethod
+    def _field_in_input(field, input_) -> bool:
+        value = input_
+        split_field = field.split(".")
+        try:
+            for key in split_field:
+                value = value[key]
+        except KeyError:
             return False
 
         return True
@@ -256,18 +256,20 @@ class MinRule(DependentRule):
         self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
-        _min = int(rule_values[0])
+        _min = rule_values[0]
         self.message_fields = dict(field=field, min=_min)
+        self.error = errors.MIN_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MIN_STRING_ERROR
-            return len(value) >= _min
+            return len(value) >= int(_min)
         elif type(value) is list:
             self.error = errors.MIN_LIST_ERROR
-            return len(value) >= _min
+            return len(value) >= int(_min)
         elif IntegerRule.valid_integer(value):
-            self.error = errors.MIN_INTEGER_ERROR
-            return value >= _min
+            return value >= int(_min)
+        elif FloatRule.valid_float(value):
+            return value >= float(_min)
 
         return False
 
@@ -285,18 +287,20 @@ class MaxRule(DependentRule):
         self.error = None
 
     def passes(self, field, value, rule_values, input_) -> bool:
-        _max = int(rule_values[0])
+        _max = rule_values[0]
         self.message_fields = dict(field=field, max=_max)
+        self.error = errors.MAX_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MAX_STRING_ERROR
-            return len(value) <= _max
+            return len(value) <= int(_max)
         elif type(value) is list:
             self.error = errors.MAX_LIST_ERROR
-            return len(value) <= _max
+            return len(value) <= int(_max)
         elif IntegerRule.valid_integer(value):
-            self.error = errors.MAX_INTEGER_ERROR
-            return value <= _max
+            return value <= int(_max)
+        elif FloatRule.valid_float(value):
+            return value <= float(_max)
 
         return False
 
@@ -392,6 +396,24 @@ class IntegerRule(Rule):
     @staticmethod
     def valid_integer(integer) -> bool:
         return type(integer) is int
+
+
+class FloatRule(Rule):
+    """Valid float"""
+
+    name = "float"
+
+    def passes(self, field, value) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_float(value)
+
+    def message(self) -> str:
+        return errors.FLOAT_ERROR
+
+    @staticmethod
+    def valid_float(float_) -> bool:
+        return type(float_) is float
 
 
 class BooleanRule(Rule):

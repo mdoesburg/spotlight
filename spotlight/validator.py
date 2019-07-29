@@ -55,6 +55,7 @@ class Validator:
             rls.AlphaNumSpaceRule(),
             rls.StringRule(),
             rls.IntegerRule(),
+            rls.FloatRule(),
             rls.BooleanRule(),
             rls.JsonRule(),
             rls.ListRule(),
@@ -319,6 +320,10 @@ class Validator:
     @staticmethod
     def valid_integer(integer) -> bool:
         return rls.IntegerRule.valid_integer(integer)
+
+    @staticmethod
+    def valid_float(float_) -> bool:
+        return rls.FloatRule.valid_float(float_)
 
     @staticmethod
     def valid_boolean(boolean) -> bool:

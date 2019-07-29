@@ -8,10 +8,10 @@ INVALID_EMAIL_ERROR = "Invalid email address."
 INVALID_URL_ERROR = "Invalid URL."
 INVALID_IP_ERROR = "Invalid IP address."
 
+MIN_ERROR = "The {field} field has to have a minimum value of {min}."
+MAX_ERROR = "The {field} field has to have a maximum value of {max}."
 MIN_STRING_ERROR = "The {field} field has to be at least {min} characters."
 MAX_STRING_ERROR = "The {field} field cannot be longer than {max} characters."
-MIN_INTEGER_ERROR = "The {field} field has to have a minimum value of {min}."
-MAX_INTEGER_ERROR = "The {field} field has to have a maximum value of {max}."
 MIN_LIST_ERROR = "The length of the {field} field has to be at least {min}."
 MAX_LIST_ERROR = "The length of the {field} field cannot be greater than {max}."
 
@@ -22,6 +22,7 @@ ALPHA_NUM_SPACE_ERROR = (
 )
 STRING_ERROR = "The {field} field must be a string."
 INTEGER_ERROR = "The {field} field must be an integer."
+FLOAT_ERROR = "The {field} field must be a float."
 BOOLEAN_ERROR = "The {field} field must be a boolean."
 UUID4_ERROR = "The {field} field must be a valid UUID."
 JSON_ERROR = "The {field} field must be a valid JSON string."
