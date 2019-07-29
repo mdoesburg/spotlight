@@ -119,6 +119,7 @@ Available methods:
 * valid_uuid4
 * valid_string
 * valid_integer
+* valid_float
 * valid_boolean
 * valid_json
 * valid_list
@@ -143,6 +144,7 @@ Available methods:
 * [alpha_num_space](#alpha_num_space)
 * [string](#string)
 * [integer](#integer)
+* [float](#float)
 * [boolean](#boolean)
 * [list](#list)
 * [dict](#dict)
@@ -248,6 +250,12 @@ string
 The field under validation must be an integer.
 ```
 integer
+```
+
+### float
+The field under validation must be an float.
+```
+float
 ```
 
 ### boolean
