@@ -253,7 +253,7 @@ integer
 ```
 
 ### float
-The field under validation must be an float.
+The field under validation must be a float.
 ```
 float
 ```
