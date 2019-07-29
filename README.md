@@ -211,13 +211,13 @@ url
 ```
 
 ### min
-The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For a list, value corresponds to the length of the list.
+The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For a list, value corresponds to the length of the list.
 ```
 min:value
 ```
 
 ### max
-The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For a list, value corresponds to the length of the list.
+The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For a list, value corresponds to the length of the list.
 ```
 max:value
 ```
