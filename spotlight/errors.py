@@ -22,7 +22,7 @@ ALPHA_NUM_SPACE_ERROR = (
 )
 STRING_ERROR = "The {field} field must be a string."
 INTEGER_ERROR = "The {field} field must be an integer."
-FLOAT_ERROR = "The {field} field must be an float."
+FLOAT_ERROR = "The {field} field must be a float."
 BOOLEAN_ERROR = "The {field} field must be a boolean."
 UUID4_ERROR = "The {field} field must be a valid UUID."
 JSON_ERROR = "The {field} field must be a valid JSON string."
