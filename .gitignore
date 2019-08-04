@@ -25,7 +25,6 @@ var/
 .requirements-cache
 node_modules
 __pycache__/
-db.sqlite
 .coverage
 coverage.xml
 .scannerwork
