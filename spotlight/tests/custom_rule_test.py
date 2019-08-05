@@ -3,9 +3,9 @@ from spotlight.rules import Rule
 
 
 class ExactlyFiveCharsRule(Rule):
-    def __init__(self):
-        super().__init__()
-        self.name = "five_chars"
+    """Exactly 5 characters"""
+
+    name = "five_chars"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field, name="you.can.replace.this")
@@ -17,9 +17,9 @@ class ExactlyFiveCharsRule(Rule):
 
 
 class UppercaseRule(Rule):
-    def __init__(self):
-        super().__init__()
-        self.name = "uppercase"
+    """Uppercase"""
+
+    name = "uppercase"
 
     def passes(self, field, value) -> bool:
         self.message_fields = dict(field=field)
