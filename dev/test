@@ -1,3 +1,14 @@
 #!/usr/bin/env sh
 
-pytest --cov=spotlight spotlight/tests
+# Delete all python cache files
+find . -name '*.pyc' -delete
+rm -rf .pytest_cache .tmontmp .testmondata
+
+TEST_CMD="python -B -m pytest"
+
+if [[ -z "$1" ]]; then
+    ${TEST_CMD} --cov=spotlight spotlight/tests
+    exit 0
+fi
+
+${TEST_CMD} $1
