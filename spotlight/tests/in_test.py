@@ -53,6 +53,18 @@ class InTest(ValidatorTest):
 
         self.assertEqual(len(errors.items()), 0)
 
+    def test_in_rule_with_mismatching_capitalization_expect_error(self):
+        input_values = {"test1": "VAL1", "test2": "vAl1", "test3": "VaL1"}
+        rules = {
+            "test1": "in:val0,val1,val2",
+            "test2": "in:val0,VaL1,val2",
+            "test3": "in:val0,vAl1,val2",
+        }
+
+        errors = self.validator.validate(input_values, rules)
+
+        self.assertEqual(len(errors), 3)
+
     def test_in_rule_with_integer_expect_no_error(self):
         input_values = {"test": 1}
         rules = {"test": "in:1,2,3"}
