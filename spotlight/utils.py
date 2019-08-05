@@ -32,7 +32,7 @@ def missing(input_, field):
                 value = value[int(key)]
             else:
                 value = value[key]
-    except KeyError:
+    except (TypeError, AttributeError, KeyError, IndexError):
         return True
 
     return empty(value)
