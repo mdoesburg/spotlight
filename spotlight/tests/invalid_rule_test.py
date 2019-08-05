@@ -5,13 +5,12 @@ from spotlight.tests.validator_test import ValidatorTest
 
 
 class InvalidRuleTest(ValidatorTest):
-    def test_empty_rule_expect_no_error(self):
+    def test_empty_rule_expect_error(self):
         rules = {"test": ""}
         input_values = {"test": "John Doe"}
 
-        errors = self.validator.validate(input_values, rules)
-
-        self.assertEqual(len(errors), 0)
+        with pytest.raises(RuleNotFoundError):
+            self.validator.validate(input_values, rules)
 
     def test_non_existent_rule_expect_rule_not_found_error(self):
         rules = {"test": "lol"}
