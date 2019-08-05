@@ -30,7 +30,6 @@ LIST_ERROR = "The {field} field must be a list."
 ACCEPTED_ERROR = "The {field} field must be accepted."
 DICT_ERROR = "The {field} field must be a dict."
 
-RULE_NOT_FOUND = "The '{rule}' rule doesn't exist"
 STARTS_WITH_ERROR = (
     "The {field} field must start with one of the following values: {values}."
 )

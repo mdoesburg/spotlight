@@ -2,6 +2,7 @@ from typing import Union, List
 
 from spotlight import errors as err
 from spotlight import rules as rls
+from spotlight.exceptions import RuleNotFoundError
 
 
 class Validator:
@@ -119,6 +120,7 @@ class Validator:
 
         self._output = {}
         self._excluded_fields = []
+
         self._validate_input(input_, input_rules)
 
         if flat:
@@ -140,43 +142,45 @@ class Validator:
             # Iterate over rules
             for rule in rules:
                 # Verify that rule isn't empty
-                if rule != "":
-                    # Split rule name and rule_values
-                    rule_name, *rule_values = rule.split(":")
+                if rule == "":
+                    continue
 
-                    # Check if field is validatable
-                    if self._is_validatable(rule_name, field, input_):
-                        # Check if rule exists
-                        if rule_name in self._available_rules:
-                            matched_rule = self._available_rules.get(rule_name)
+                # Split rule name and rule_values
+                rule_name, *rule_values = rule.split(":")
 
-                            wildcard_locations = self._get_wildcard_locations(field)
+                # Check if rule exists
+                if rule_name not in self._available_rules:
+                    raise RuleNotFoundError(rule_name)
 
-                            if len(wildcard_locations) > 0:
-                                index = 0
-                                while True:
-                                    index_field = self._replace_character_at_index(
-                                        field, index, wildcard_locations[0]
+                # Check if field is validatable
+                if self._is_validatable(rule_name, field, input_):
+                    matched_rule = self._available_rules.get(rule_name)
+
+                    wildcard_locations = self._get_wildcard_locations(field)
+
+                    if len(wildcard_locations) > 0:
+                        index = 0
+                        while True:
+                            index_field = self._replace_character_at_index(
+                                field, index, wildcard_locations[0]
+                            )
+                            if index_field not in self._excluded_fields:
+                                try:
+                                    self._validate_input_to_rule(
+                                        index_field,
+                                        input_,
+                                        matched_rule,
+                                        rule_values,
+                                        rule_name,
                                     )
-                                    if not index_field in self._excluded_fields:
-                                        try:
-                                            self._validate_input_to_rule(
-                                                index_field,
-                                                input_,
-                                                matched_rule,
-                                                rule_values,
-                                                rule_name,
-                                            )
-                                        except (IndexError, TypeError):
-                                            break
-                                    index = index + 1
+                                except (IndexError, TypeError):
+                                    break
+                            index = index + 1
 
-                            elif not field in self._excluded_fields:
-                                self._validate_input_to_rule(
-                                    field, input_, matched_rule, rule_values, rule_name
-                                )
-                        else:
-                            raise Exception(err.RULE_NOT_FOUND.format(rule=rule_name))
+                    elif field not in self._excluded_fields:
+                        self._validate_input_to_rule(
+                            field, input_, matched_rule, rule_values, rule_name
+                        )
 
     def _validate_input_to_rule(
         self, field, input_, matched_rule, rule_values, rule_name
