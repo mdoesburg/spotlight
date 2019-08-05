@@ -7,6 +7,11 @@ from spotlight import rules as rls
 class Validator:
     """
     Creates an instance of the Validator class.
+
+    Parameters
+    ----------
+    plugins : list
+        A list of plugins that add additional validation rules.
     """
 
     class Plugin:
@@ -87,21 +92,30 @@ class Validator:
 
     def validate(
         self, input_: Union[dict, object], input_rules: dict, flat: bool = False
-    ):
+    ) -> Union[dict, list]:
         """
-         Validate input with given rules.
+        Validate input with given rules.
 
-         Parameters
-         ----------
-         input_ : Union[dict, object]
-             Dict or object with input that needs to be validated.
-             For example: {"email": "john.doe@example.com"},
-             Input(email="john.doe@example.com")
-         input_rules : Union[dict, object]
-             Dict with validation rules for given input.
-             For example: {"email": "required|email|unique:user,email"}
+        Parameters
+        ----------
+        input_ : dict or object
+            Dict or object with input that needs to be validated.
+            For example: {"email": "john.doe@example.com"},
+            Input(email="john.doe@example.com")
+        input_rules : dict
+            Dict with validation rules for given input.
+            For example: {"email": "required|email|unique:user,email"}
+        flat : bool, optional
+            Returns a list of errors instead of a dict if true.
 
-         """
+        Returns
+        -------
+        errors : dict or list
+            Dict or list of errors. When a dict of errors is returned, each key
+            represents the field name, and the corresponding value is a list of
+            errors for that key/field. When the optional parameter `flat` is
+            set to true, a list of only the error messages is returned.
+        """
 
         self._output = {}
         self._excluded_fields = []
