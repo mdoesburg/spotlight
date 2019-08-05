@@ -11,7 +11,6 @@ class NotWithTest(ValidatorTest):
             other=self.field1
         )
         self.rules = {
-            "test1": "",
             "test2": "not_with:test1"
         }
 

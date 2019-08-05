@@ -11,7 +11,6 @@ class RequiredWithTest(ValidatorTest):
             other=self.other_field
         )
         self.rules = {
-            "test1": "",
             "test2": "required_with:test1"
         }
 
