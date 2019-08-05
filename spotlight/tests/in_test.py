@@ -77,7 +77,7 @@ class InTest(ValidatorTest):
 
     def test_in_rule_with_bool_expect_no_error(self):
         input_values = {"test": True}
-        rules = {"test": "in:true,false"}
+        rules = {"test": "in:True,False"}
         expected = None
 
         errors = self.validator.validate(input_values, rules)

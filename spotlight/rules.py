@@ -320,7 +320,7 @@ class InRule(DependentRule):
         _rule_values = rule_values[0].split(",")
         self.message_fields = dict(field=field, values=", ".join(_rule_values))
 
-        return str(value).lower() in _rule_values
+        return str(value) in _rule_values
 
     def message(self) -> str:
         return errors.IN_ERROR
