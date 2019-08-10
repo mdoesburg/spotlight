@@ -163,15 +163,15 @@ required
 ```
 
 ### required_without
-The field under validation must be present and not empty when the other specified field is not present.
+The field under validation must be present and not empty only when any of the other specified fields are not present.
 ```
-required_without:other
+required_without:field1,field2,...
 ```
 
 ### required_with
-The field under validation must be present and not empty if the other specified field is present.
+The field under validation must be present and not empty only if any of the other specified fields are present.
 ```
-required_with:other
+required_with:field1,field2,...
 ```
 
 ### required_if

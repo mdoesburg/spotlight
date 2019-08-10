@@ -1,6 +1,10 @@
 REQUIRED_ERROR = "The {field} field is required."
-REQUIRED_WITHOUT_ERROR = "The {field} field is required if the {other} field is absent."
-REQUIRED_WITH_ERROR = "The {field} field is required if the {other} field is present."
+REQUIRED_WITHOUT_ERROR = (
+    "The {field} field is required if any of the following fields are absent: {other}."
+)
+REQUIRED_WITH_ERROR = (
+    "The {field} field is required if any of the following fields are present: {other}."
+)
 REQUIRED_IF_ERROR = "The {field} field is required if the {other} field equals {value}."
 NOT_WITH_ERROR = "The {field} field can't be present when the {other} field is present."
 FILLED_ERROR = "The {field} field must not be empty when it is present."

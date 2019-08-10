@@ -1,112 +1,141 @@
 import ipaddress
 import json
 import re
+from typing import Any
 from uuid import UUID
 from abc import ABC, abstractmethod
 
 from spotlight import errors
+from spotlight.exceptions import RuleNameAlreadyExistsError, AttributeNotImplementedError
 from spotlight.utils import missing, equals, empty, regex_match
 
 
-class BaseRule(ABC):
-    name = None
+class Rule(ABC):
+    name = NotImplemented
+    implicit = False
+    stop = False
+
+    subclasses = []
 
     def __init__(self):
-        self.implicit = False
-        self.stop = False
         self.message_fields = {}
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        # if Rule in cls.__bases__:
+        #     return
+        if cls.name is NotImplemented:
+            raise AttributeNotImplementedError("name", cls.__name__)
+        if cls.name in [subclass.name for subclass in cls.subclasses]:
+            raise RuleNameAlreadyExistsError(cls.name)
+
+        cls.subclasses.append(cls)
+
+    @abstractmethod
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        raise NotImplementedError
+
+    @property
     @abstractmethod
     def message(self) -> str:
-        pass
+        raise NotImplementedError
+
+    # @overload
+    # @abstractmethod
+    # def test(self, field: str, value: str) -> bool:
+    #     ...
+    #
+    # @overload
+    # @abstractmethod
+    # def test(self, field: str, value: str, rule_values: list, input_: dict) -> bool:
+    #     ...
+    #
+    # @abstractmethod
+    # def test(self, *args, **kwargs) -> bool:
+    #     raise NotImplementedError
 
 
-class Rule(BaseRule):
-    @abstractmethod
-    def passes(self, field, value) -> bool:
-        pass
+# class RuleOld(BaseRule):
+#     @abstractmethod
+#     def passes(self, field: str, value: Any) -> bool:
+#         pass
+#
+#
+# class DependentRule(BaseRule):
+#     @abstractmethod
+#     def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+#         pass
 
 
-class DependentRule(BaseRule):
-    @abstractmethod
-    def passes(self, field, value, rule_values, input_) -> bool:
-        pass
-
-
-class RequiredRule(DependentRule):
+class RequiredRule(Rule):
     """Required field"""
 
     name = "required"
+    implicit = True
+    stop = True
 
-    def __init__(self):
-        super().__init__()
-        self.implicit = True
-        self.stop = True
-
-    def passes(self, field, value, rule_values, input_) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return not missing(input_, field) and not empty(value)
 
+    @property
     def message(self) -> str:
         return errors.REQUIRED_ERROR
 
 
-class RequiredWithoutRule(DependentRule):
+class RequiredWithoutRule(Rule):
     """Required if other field is not present"""
 
     name = "required_without"
+    implicit = True
+    stop = True
 
-    def __init__(self):
-        super().__init__()
-        self.implicit = True
-        self.stop = True
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        other_fields = rule_values.split(",")
+        self.message_fields = dict(field=field, other=", ".join(other_fields))
 
-    def passes(self, field, value, rule_values, input_) -> bool:
-        other = rule_values[0]
-        self.message_fields = dict(field=field, other=other)
-
-        return not missing(input_, field) and missing(input_, other)
-
-    def message(self) -> str:
-        return errors.REQUIRED_WITHOUT_ERROR
-
-
-class RequiredWithRule(DependentRule):
-    """Required with other field"""
-
-    name = "required_with"
-
-    def __init__(self):
-        super().__init__()
-        self.implicit = True
-        self.stop = True
-
-    def passes(self, field, value, rule_values, input_) -> bool:
-        other = rule_values[0]
-        self.message_fields = dict(field=field, other=other)
-
-        if missing(input_, field) and input_.get(other):
+        if missing(input_, field) and any(missing(input_, o) for o in other_fields):
             return False
 
         return True
 
+    @property
+    def message(self) -> str:
+        return errors.REQUIRED_WITHOUT_ERROR
+
+
+class RequiredWithRule(Rule):
+    """Required with other field"""
+
+    name = "required_with"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        other_fields = rule_values.split(",")
+        self.message_fields = dict(field=field, other=", ".join(other_fields))
+
+        if missing(input_, field) and any(not missing(input_, o) for o in other_fields):
+            return False
+
+        return True
+
+    @property
     def message(self) -> str:
         return errors.REQUIRED_WITH_ERROR
 
 
-class RequiredIfRule(DependentRule):
+class RequiredIfRule(Rule):
     """Required if other field equals certain value"""
 
     name = "required_if"
+    implicit = True
+    stop = True
 
-    def __init__(self):
-        super().__init__()
-        self.implicit = True
-        self.stop = True
-
-    def passes(self, field, value, rule_values, input_) -> bool:
-        other, val = rule_values[0].split(",")
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        other, val = rule_values.split(",")
         other_val = input_.get(other)
         self.message_fields = dict(field=field, other=other, value=val)
 
@@ -115,21 +144,19 @@ class RequiredIfRule(DependentRule):
 
         return True
 
+    @property
     def message(self) -> str:
         return errors.REQUIRED_IF_ERROR
 
 
-class NotWithRule(DependentRule):
+class NotWithRule(Rule):
     """Not with other field"""
 
     name = "not_with"
+    stop = True
 
-    def __init__(self):
-        super().__init__()
-        self.stop = True
-
-    def passes(self, field, value, rule_values, input_) -> bool:
-        other = rule_values[0]
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        other = rule_values
         self.message_fields = dict(field=field, other=other)
 
         if not missing(input_, field) and not missing(input_, other):
@@ -137,21 +164,19 @@ class NotWithRule(DependentRule):
 
         return True
 
+    @property
     def message(self) -> str:
         return errors.NOT_WITH_ERROR
 
 
-class FilledRule(DependentRule):
+class FilledRule(Rule):
     """Not empty when present"""
 
     name = "filled"
+    implicit = True
+    stop = True
 
-    def __init__(self):
-        super().__init__()
-        self.implicit = True
-        self.stop = True
-
-    def passes(self, field, value, rule_values, input_) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
         if self._field_in_input(field, input_) and empty(value):
             return False
@@ -170,6 +195,7 @@ class FilledRule(DependentRule):
 
         return True
 
+    @property
     def message(self) -> str:
         return errors.FILLED_ERROR
 
@@ -179,11 +205,12 @@ class EmailRule(Rule):
 
     name = "email"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_email(value)
 
+    @property
     def message(self) -> str:
         return errors.INVALID_EMAIL_ERROR
 
@@ -200,11 +227,12 @@ class UrlRule(Rule):
 
     name = "url"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_url(value)
 
+    @property
     def message(self) -> str:
         return errors.INVALID_URL_ERROR
 
@@ -227,11 +255,12 @@ class IpRule(Rule):
 
     name = "ip"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_ip(value)
 
+    @property
     def message(self) -> str:
         return errors.INVALID_IP_ERROR
 
@@ -246,7 +275,7 @@ class IpRule(Rule):
             return False
 
 
-class MinRule(DependentRule):
+class MinRule(Rule):
     """Min length"""
 
     name = "min"
@@ -255,29 +284,30 @@ class MinRule(DependentRule):
         super().__init__()
         self.error = None
 
-    def passes(self, field, value, rule_values, input_) -> bool:
-        _min = rule_values[0]
-        self.message_fields = dict(field=field, min=_min)
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        min_ = rule_values
+        self.message_fields = dict(field=field, min=min_)
         self.error = errors.MIN_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MIN_STRING_ERROR
-            return len(value) >= int(_min)
+            return len(value) >= int(min_)
         elif type(value) is list:
             self.error = errors.MIN_LIST_ERROR
-            return len(value) >= int(_min)
+            return len(value) >= int(min_)
         elif IntegerRule.valid_integer(value):
-            return value >= int(_min)
+            return value >= int(min_)
         elif FloatRule.valid_float(value):
-            return value >= float(_min)
+            return value >= float(min_)
 
         return False
 
+    @property
     def message(self) -> str:
         return self.error
 
 
-class MaxRule(DependentRule):
+class MaxRule(Rule):
     """Max length"""
 
     name = "max"
@@ -286,29 +316,30 @@ class MaxRule(DependentRule):
         super().__init__()
         self.error = None
 
-    def passes(self, field, value, rule_values, input_) -> bool:
-        _max = rule_values[0]
-        self.message_fields = dict(field=field, max=_max)
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        max_ = rule_values
+        self.message_fields = dict(field=field, max=max_)
         self.error = errors.MAX_ERROR
 
         if StringRule.valid_string(value):
             self.error = errors.MAX_STRING_ERROR
-            return len(value) <= int(_max)
+            return len(value) <= int(max_)
         elif type(value) is list:
             self.error = errors.MAX_LIST_ERROR
-            return len(value) <= int(_max)
+            return len(value) <= int(max_)
         elif IntegerRule.valid_integer(value):
-            return value <= int(_max)
+            return value <= int(max_)
         elif FloatRule.valid_float(value):
-            return value <= float(_max)
+            return value <= float(max_)
 
         return False
 
+    @property
     def message(self) -> str:
         return self.error
 
 
-class InRule(DependentRule):
+class InRule(Rule):
     """
         In: The field under validation must be included in the given list
         of values
@@ -316,12 +347,13 @@ class InRule(DependentRule):
 
     name = "in"
 
-    def passes(self, field, value, rule_values, input_) -> bool:
-        _rule_values = rule_values[0].split(",")
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        _rule_values = rule_values.split(",")
         self.message_fields = dict(field=field, values=", ".join(_rule_values))
 
         return str(value) in _rule_values
 
+    @property
     def message(self) -> str:
         return errors.IN_ERROR
 
@@ -331,11 +363,12 @@ class AlphaNumRule(Rule):
 
     name = "alpha_num"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_alpha_num(value)
 
+    @property
     def message(self) -> str:
         return errors.ALPHA_NUM_ERROR
 
@@ -349,11 +382,12 @@ class AlphaNumSpaceRule(Rule):
 
     name = "alpha_num_space"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_alpha_num_space(value)
 
+    @property
     def message(self) -> str:
         return errors.ALPHA_NUM_SPACE_ERROR
 
@@ -367,11 +401,12 @@ class StringRule(Rule):
 
     name = "string"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_string(value)
 
+    @property
     def message(self) -> str:
         return errors.STRING_ERROR
 
@@ -385,11 +420,12 @@ class IntegerRule(Rule):
 
     name = "integer"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_integer(value)
 
+    @property
     def message(self) -> str:
         return errors.INTEGER_ERROR
 
@@ -403,11 +439,12 @@ class FloatRule(Rule):
 
     name = "float"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_float(value)
 
+    @property
     def message(self) -> str:
         return errors.FLOAT_ERROR
 
@@ -421,11 +458,12 @@ class BooleanRule(Rule):
 
     name = "boolean"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_boolean(value)
 
+    @property
     def message(self) -> str:
         return errors.BOOLEAN_ERROR
 
@@ -438,12 +476,14 @@ class ListRule(Rule):
     """Valid list"""
 
     name = "list"
+    stop = True
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_list(value)
 
+    @property
     def message(self) -> str:
         return errors.LIST_ERROR
 
@@ -457,11 +497,12 @@ class Uuid4Rule(Rule):
 
     name = "uuid4"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_uuid4(value)
 
+    @property
     def message(self) -> str:
         return errors.UUID4_ERROR
 
@@ -482,11 +523,12 @@ class JsonRule(Rule):
 
     name = "json"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_json(value)
 
+    @property
     def message(self) -> str:
         return errors.JSON_ERROR
 
@@ -504,32 +546,29 @@ class AcceptedRule(Rule):
 
     name = "accepted"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         accepted_values = ["yes", "on", 1, True]
         self.message_fields = dict(field=field)
 
         return value in accepted_values
 
+    @property
     def message(self) -> str:
         return errors.ACCEPTED_ERROR
 
 
-class StartsWithRule(DependentRule):
+class StartsWithRule(Rule):
     """The field under validation must start with one of the given values."""
 
     name = "starts_with"
 
-    def passes(self, field, value, rule_values, input_) -> bool:
-        _rule_values = rule_values[0].split(",")
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+        _rule_values = rule_values.split(",")
         self.message_fields = dict(field=field, values=", ".join(_rule_values))
 
-        valid = False
-        for rule_val in _rule_values:
-            if str(value).startswith(rule_val):
-                valid = True
+        return any([str(value).startswith(rule_val) for rule_val in _rule_values])
 
-        return valid
-
+    @property
     def message(self) -> str:
         return errors.STARTS_WITH_ERROR
 
@@ -539,11 +578,12 @@ class DictRule(Rule):
 
     name = "dict"
 
-    def passes(self, field, value) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_dict(value)
 
+    @property
     def message(self) -> str:
         return errors.DICT_ERROR
 
