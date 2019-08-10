@@ -1,10 +1,6 @@
 import re
 
 
-def camel_to_snake(s):
-    return re.compile(r"(?!^)(?<!_)([A-Z])").sub(r"_\1", s).lower()
-
-
 def regex_match(regex, value):
     match = None
     try:
