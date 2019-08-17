@@ -8,10 +8,10 @@ class RuleNameAlreadyExistsError(Exception):
         super().__init__(f"the rule name '{rule}' already exists")
 
 
-class InvalidInputError(Exception):
-    def __init__(self, input_type: type):
+class InvalidDataError(Exception):
+    def __init__(self, data_type: type):
         super().__init__(
-            f"expected 'dict' or an 'object' that can be converted to a 'dict' got '{input_type}'"
+            f"expected 'dict' or an 'object' that can be converted to a 'dict' got '{data_type}'"
         )
 
 

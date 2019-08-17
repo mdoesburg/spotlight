@@ -200,7 +200,7 @@ class Validator:
             try:
                 self._data = self._data.__dict__
             except AttributeError:
-                raise InvalidInputError(type(self._data))
+                raise InvalidDataError(type(self._data))
 
     def _validate_rules_type(self):
         if type(self._rules) is not dict:
