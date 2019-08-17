@@ -1,4 +1,4 @@
-from spotlight import errors as err
+from spotlight.errors import ACCEPTED_ERROR
 from spotlight.tests.validator_test import ValidatorTest
 
 
@@ -8,17 +8,12 @@ class AcceptedTest(ValidatorTest):
             "tos1": "accepted",
             "tos2": "accepted",
             "tos3": "accepted",
-            "tos4": "accepted"
+            "tos4": "accepted",
         }
-        input_values = {
-            "tos1": "off",
-            "tos2": 2,
-            "tos3": False,
-            "tos4": "no"
-        }
-        expected = err.ACCEPTED_ERROR
+        data = {"tos1": "off", "tos2": 2, "tos3": False, "tos4": "no"}
+        expected = ACCEPTED_ERROR
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
         self.assertEqual(len(errors.items()), 4)
         for field, errs in errors.items():
@@ -29,17 +24,12 @@ class AcceptedTest(ValidatorTest):
             "tos1": "accepted",
             "tos2": "accepted",
             "tos3": "accepted",
-            "tos4": "accepted"
+            "tos4": "accepted",
         }
-        input_values = {
-            "tos1": "on",
-            "tos2": 1,
-            "tos3": True,
-            "tos4": "yes"
-        }
-        expected = err.ACCEPTED_ERROR
+        data = {"tos1": "on", "tos2": 1, "tos3": True, "tos4": "yes"}
+        expected = ACCEPTED_ERROR
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
         self.assertEqual(len(errors.items()), 0)
         for field, errs in errors.items():

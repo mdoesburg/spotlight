@@ -1,5 +1,12 @@
 from spotlight.tests.validator_test import ValidatorTest
-from spotlight import errors as errs
+from spotlight.errors import (
+    MAX_STRING_ERROR,
+    EMAIL_ERROR,
+    FILLED_ERROR,
+    IN_ERROR,
+    REQUIRED_ERROR,
+    MIN_STRING_ERROR,
+)
 
 
 class NestedValidationTest(ValidatorTest):
@@ -9,48 +16,44 @@ class NestedValidationTest(ValidatorTest):
         self.validator.overwrite_values = {}
 
     def test_nested_validation_expect_error(self):
-        # rules = {"nested": {"test": "max:5|email"}, "non_nested": "max:1"}
         rules = {"nested.test": "max:5|email", "non_nested": "max:1"}
-        input_values = {"nested": {"test": "123456"}, "non_nested": "12"}
+        data = {"nested": {"test": "123456"}, "non_nested": "12"}
         expected = {
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ],
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
 
-        errors = self.validator.validate(input_values, rules)
-        self.assertEqual(expected, errors)
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
 
     def test_double_nested_validation_expect_error(self):
-        # rules = {
-        #     "nested": {"test": "max:5|email", "double_nested": {"test2": "max:2"}},
-        #     "non_nested": "max:1",
-        # }
         rules = {
             "nested.test": "max:5|email",
             "nested.double_nested.test2": "max:2",
             "non_nested": "max:1",
         }
-        input_values = {
+        data = {
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
         expected = {
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ],
             "nested.double_nested.test2": [
-                errs.MAX_STRING_ERROR.format(field="nested.double_nested.test2", max=2)
+                MAX_STRING_ERROR.format(field="nested.double_nested.test2", max=2)
             ],
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_double_nested_validation_custom_message_expect_error(self):
         rules = {
@@ -58,27 +61,28 @@ class NestedValidationTest(ValidatorTest):
             "nested.double_nested.test2": "max:2",
             "non_nested": "max:1",
         }
-        input_values = {
+        data = {
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
         new_message = "Hey! The {field} field has to be at least {max} chars!"
-        messages = {"nested.double_nested.test2.max": new_message}
         expected = {
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ],
             "nested.double_nested.test2": [
                 new_message.format(field="nested.double_nested.test2", max=2)
             ],
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=1)],
+        }
+        self.validator.overwrite_messages = {
+            "nested.double_nested.test2.max": new_message
         }
 
-        self.validator.overwrite_messages = messages
+        errors = self.validator.validate(data, rules)
 
-        errors = self.validator.validate(input_values, rules)
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_double_nested_validation_custom_field_expect_error(self):
         rules = {
@@ -86,26 +90,25 @@ class NestedValidationTest(ValidatorTest):
             "nested.double_nested.test2": "max:2",
             "non_nested": "max:1",
         }
-        input_values = {
+        data = {
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
-        fields = {"nested.double_nested.test2": "custom"}
         expected = {
             "nested.double_nested.test2": [
-                errs.MAX_STRING_ERROR.format(field="custom", max=2)
+                MAX_STRING_ERROR.format(field="custom", max=2)
             ],
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ],
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
-        self.validator.overwrite_fields = fields
+        self.validator.overwrite_fields = {"nested.double_nested.test2": "custom"}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_double_nested_validation_with_new_values_expect_error(self):
         rules = {
@@ -113,121 +116,129 @@ class NestedValidationTest(ValidatorTest):
             "nested.double_nested.test2": "in:val1,val2,val3",
             "non_nested": "max:1",
         }
-        input_values = {
+        data = {
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
-        new_values = "piet, henk, jan"
-        values = {"nested.double_nested.test2": {"values": new_values}}
+        new_values = "new1, new2, new3"
         expected = {
             "nested.double_nested.test2": [
-                errs.IN_ERROR.format(
-                    field="nested.double_nested.test2", values=new_values
-                )
+                IN_ERROR.format(field="nested.double_nested.test2", values=new_values)
             ],
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ],
-            "non_nested": [errs.MAX_STRING_ERROR.format(field="non_nested", max=1)],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=1)],
         }
-        self.validator.overwrite_values = values
+        self.validator.overwrite_values = {
+            "nested.double_nested.test2": {
+                "val1": "new1",
+                "val2": "new2",
+                "val3": "new3",
+            }
+        }
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_nested_required_field_expect_error(self):
         rules = {"nested.test": "required"}
-        input_values = {"nested": {}}
-        expected = {"nested.test": [errs.REQUIRED_ERROR.format(field="nested.test")]}
+        data = {"nested": {}}
+        expected = {"nested.test": [REQUIRED_ERROR.format(field="nested.test")]}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
-    def test_nested_validation_with_nested_required_expect_error(self):
+    def test_nested_validation_with_nested_field_expect_error(self):
         rules = {"nested.test": "max:5|email"}
-        input_values = {"nested": {"test": "123456"}}
+        data = {"nested": {"test": "123456"}}
         expected = {
             "nested.test": [
-                errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-                errs.INVALID_EMAIL_ERROR,
+                MAX_STRING_ERROR.format(field="nested.test", max=5),
+                EMAIL_ERROR.format(field="nested.test"),
             ]
         }
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
-    def test_double_nested_validation_with_flat_expect_flat_error_list(self):
+    def test_double_nested_validation_with_flat_expect_error_list(self):
         rules = {
             "nested.test": "max:5|email",
             "nested.double_nested.test2": "in:val1,val2,val3",
             "non_nested": "max:1",
         }
-        input_values = {
+        data = {
             "nested": {"test": "123456", "double_nested": {"test2": "12222"}},
             "non_nested": "12",
         }
-        new_values = "piet, henk, jan"
-        values = {"nested.double_nested.test2": {"values": new_values}}
+        new_values = "new1, new2, new3"
         expected = [
-            errs.MAX_STRING_ERROR.format(field="nested.test", max=5),
-            errs.INVALID_EMAIL_ERROR,
-            errs.IN_ERROR.format(field="nested.double_nested.test2", values=new_values),
-            errs.MAX_STRING_ERROR.format(field="non_nested", max=1),
+            MAX_STRING_ERROR.format(field="nested.test", max=5),
+            EMAIL_ERROR.format(field="nested.test"),
+            IN_ERROR.format(field="nested.double_nested.test2", values=new_values),
+            MAX_STRING_ERROR.format(field="non_nested", max=1),
         ]
-        self.validator.overwrite_values = values
+        self.validator.overwrite_values = {
+            "nested.double_nested.test2": {
+                "val1": "new1",
+                "val2": "new2",
+                "val3": "new3",
+            }
+        }
 
-        errors = self.validator.validate(input_values, rules, flat=True)
+        errors = self.validator.validate(data, rules, flat=True)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_optional_field_and_empty_dict_expect_no_error(self):
         rules = {"nested.test": "email"}
-        input_values = {"nested": {}}
+        data = {"nested": {}}
         expected = {}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_optional_field_and_input_none_expect_no_error(self):
         rules = {"nested.test": "email"}
-        input_values = {"nested": None}
+        data = {"nested": None}
         expected = {}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_optional_field_and_no_input_expect_no_error(self):
         rules = {"nested.test": "email"}
-        input_values = {}
+        data = {}
         expected = {}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_filled_field_and_no_input_expect_error(self):
         rules = {"nested.test": "filled"}
-        input_values = {"nested": {"test": None}}
-        expected = {"nested.test": [errs.FILLED_ERROR.format(field="nested.test")]}
+        data = {"nested": {"test": None}}
+        expected = {"nested.test": [FILLED_ERROR.format(field="nested.test")]}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_required_field_expect_no_error(self):
         rules = {"nested.test": "required"}
-        input_values = {"nested": {"test": "test"}}
+        data = {"nested": {"test": "test"}}
         expected = {}
 
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
 
-        self.assertEqual(expected, errors)
+        self.assertEqual(errors, expected)
 
     def test_nested_validation_with_list(self):
         rules = {
@@ -235,7 +246,7 @@ class NestedValidationTest(ValidatorTest):
             "nested.list.*.test2": "min:2",
             "non_nested": "max:2",
         }
-        input_values = {
+        data = {
             "nested": {
                 "list": [
                     {"test": "12", "test2": "1"},
@@ -246,21 +257,22 @@ class NestedValidationTest(ValidatorTest):
             "non_nested": "test",
         }
         expected = {
-            "nested.list.0.test2": [
-                "The nested.list.0.test2 field has to be at least 2 characters."
-            ],
-            "nested.list.1.test": ["The nested.list.1.test field is required."],
-            "nested.list.1.test2": [
-                "The nested.list.1.test2 field has to be at least 2 characters."
-            ],
+            "nested.list.1.test": [REQUIRED_ERROR.format(field="nested.list.1.test")],
             "nested.list.2.test": [
-                "The nested.list.2.test field cannot be longer than 2 characters."
+                MAX_STRING_ERROR.format(field="nested.list.2.test", max=2)
+            ],
+            "nested.list.0.test2": [
+                MIN_STRING_ERROR.format(field="nested.list.0.test2", min=2)
+            ],
+            "nested.list.1.test2": [
+                MIN_STRING_ERROR.format(field="nested.list.1.test2", min=2)
             ],
             "nested.list.2.test2": [
-                "The nested.list.2.test2 field has to be at least 2 characters."
+                MIN_STRING_ERROR.format(field="nested.list.2.test2", min=2)
             ],
-            "non_nested": ["The non_nested field cannot be longer than 2 characters."],
+            "non_nested": [MAX_STRING_ERROR.format(field="non_nested", max=2)],
         }
 
-        errors = self.validator.validate(input_values, rules)
-        self.assertEqual(expected, errors)
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)

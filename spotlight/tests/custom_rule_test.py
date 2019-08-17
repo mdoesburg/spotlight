@@ -9,7 +9,7 @@ class ExactlyFiveCharsRule(Rule):
 
     name = "five_chars"
 
-    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
         self.message_fields = dict(field=field, name="you.can.replace.this")
 
         return len(value) == 5
@@ -24,7 +24,7 @@ class UppercaseRule(Rule):
 
     name = "uppercase"
 
-    def passes(self, field: str, value: Any, rule_values: str, input_: dict) -> bool:
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
         self.message_fields = dict(field=field)
 
         return value.upper() == value
@@ -40,39 +40,30 @@ class CustomRuleTest(ValidatorTest):
 
     def test_custom_rule_uppercase_with_non_uppercase_string_expect_error(self):
         field = "test"
-        rules = {
-            "test": "uppercase"
-        }
-        input_values = {
-            "test": "test"
-        }
+        rules = {"test": "uppercase"}
+        data = {"test": "test"}
         expected = "The test field must be uppercase."
 
         rule = UppercaseRule()
         self.validator.register_rule(rule)
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
         errs = errors.get(field)
 
         self.assertEqual(errs[0], expected)
 
     def test_custom_rule_five_chars_with_invalid_string_expect_error(self):
         field = "test"
-        rules = {
-            "test": "five_chars"
-        }
-        input_values = {
-            "test": "test"
-        }
-        fields = {
-            "test": "test",
-            "you.can.replace.this": "lol"
-        }
+        rules = {"test": "five_chars"}
+        data = {"test": "test"}
         rule = ExactlyFiveCharsRule()
-        expected = rule.message.format(field=field, name="lol")
+        self.validator.overwrite_fields = {
+            "test": "test",
+            "you.can.replace.this": "custom",
+        }
+        expected = rule.message.format(field=field, name="custom")
 
-        self.validator.overwrite_fields = fields
         self.validator.register_rule(rule)
-        errors = self.validator.validate(input_values, rules)
+        errors = self.validator.validate(data, rules)
         errs = errors.get(field)
 
         self.assertEqual(errs[0], expected)
