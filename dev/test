@@ -6,6 +6,11 @@ rm -rf .pytest_cache .tmontmp .testmondata
 
 TEST_CMD="python -B -m pytest"
 
+if [[ $1 = "cov" ]]; then
+    ${TEST_CMD} --cov-report=xml --cov=spotlight spotlight/tests
+    exit 0
+fi
+
 if [[ -z "$1" ]]; then
     ${TEST_CMD} --cov=spotlight spotlight/tests
     exit 0
