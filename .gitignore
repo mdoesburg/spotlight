@@ -29,4 +29,5 @@ __pycache__/
 coverage.xml
 .scannerwork
 .coveragerc
+htmlcov
 sonar-project.properties
