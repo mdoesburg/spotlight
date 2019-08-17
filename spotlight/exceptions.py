@@ -27,3 +27,7 @@ class AttributeNotImplementedError(Exception):
         super().__init__(
             f"the class '{class_name}' is missing the '{attribute}' attribute"
         )
+
+
+class FieldValueNotFoundError(Exception):
+    pass
