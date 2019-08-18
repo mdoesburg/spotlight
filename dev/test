@@ -5,14 +5,16 @@ find . -name '*.pyc' -delete
 rm -rf .pytest_cache .tmontmp .testmondata
 
 TEST_CMD="python -B -m pytest"
+TEST_PATH="spotlight/tests"
+COVERAGE_FLAG="--cov=spotlight"
 
-if [[ $1 = "cov" ]]; then
-    ${TEST_CMD} --cov-report=xml --cov=spotlight spotlight/tests
+if [[ $1 = "-c" ]] || [[ $1 = "--cov" ]]; then
+    ${TEST_CMD} --cov-report=xml ${COVERAGE_FLAG} ${TEST_PATH}
     exit 0
 fi
 
 if [[ -z "$1" ]]; then
-    ${TEST_CMD} --cov=spotlight spotlight/tests
+    ${TEST_CMD} ${COVERAGE_FLAG} ${TEST_PATH}
     exit 0
 fi
 
