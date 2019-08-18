@@ -1,5 +1,5 @@
 # Spotlight
-Laravel style input validation for Python.
+Laravel style data validation for Python.
 
 ## Table of Contents
 * [Installation](#installation)
