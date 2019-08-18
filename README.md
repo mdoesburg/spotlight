@@ -132,6 +132,7 @@ Available methods:
 * [required_without](#required_without)
 * [required_with](#required_without)
 * [required_if](#required_if)
+* [required_unless](#required_unless)
 * [not_with](#not_with)
 * [filled](#filled)
 * [email](#email)
@@ -178,6 +179,12 @@ required_with:field1,field2,...
 The field under validation must be present and not empty if the other specified field equals a certain value.
 ```
 required_if:other,value
+```
+
+### required_unless
+The field under validation must be present and not empty unless the other specified field equals a certain value.
+```
+required_unless:other,value
 ```
 
 ### not_with

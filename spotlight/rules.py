@@ -124,6 +124,28 @@ class RequiredIfRule(Rule):
         return errors.REQUIRED_IF_ERROR
 
 
+class RequiredUnlessRule(Rule):
+    """Required unless other field equals certain value"""
+
+    name = "required_unless"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+        other, val = rule_values.split(",")
+        other_val = data.get(other)
+        self.message_fields = dict(field=field, other=other, value=val)
+
+        if missing(data, field) and not equal(val, other_val):
+            return False
+
+        return True
+
+    @property
+    def message(self) -> str:
+        return errors.REQUIRED_UNLESS_ERROR
+
+
 class NotWithRule(Rule):
     """Not with other field"""
 
