@@ -1,4 +1,4 @@
-from spotlight.errors import MAX_STRING_ERROR, MAX_ERROR, MAX_LIST_ERROR
+from spotlight.errors import MAX_STRING_ERROR, MAX_ERROR, MAX_ITEMS_ERROR
 from spotlight.tests.validator_test import ValidatorTest
 
 
@@ -49,7 +49,7 @@ class MaxTest(ValidatorTest):
     def test_max_rule_with_list_size_expect_error(self):
         rules = {"test": "max:5"}
         data = {"test": [1, 2, 3, 4, 5, 6]}
-        expected = MAX_LIST_ERROR.format(field=self.field, max=5)
+        expected = MAX_ITEMS_ERROR.format(field=self.field, max=5)
 
         errors = self.validator.validate(data, rules)
         errs = errors.get(self.field)

@@ -288,17 +288,18 @@ class MinRule(Rule):
         min_ = rule_values
         self.message_fields = dict(field=field, min=min_)
         self.error = errors.MIN_ERROR
+        expected = float(min_)
 
-        if StringRule.valid_string(value):
+        if isinstance(value, str):
             self.error = errors.MIN_STRING_ERROR
-            return len(value) >= int(min_)
-        elif type(value) is list:
-            self.error = errors.MIN_LIST_ERROR
-            return len(value) >= int(min_)
-        elif IntegerRule.valid_integer(value):
-            return value >= int(min_)
-        elif FloatRule.valid_float(value):
-            return value >= float(min_)
+            return len(value) >= expected
+        elif isinstance(value, list) or isinstance(value, dict):
+            self.error = errors.MIN_ITEMS_ERROR
+            return len(value) >= expected
+        elif isinstance(value, int):
+            return value >= expected
+        elif isinstance(value, float):
+            return value >= expected
 
         return False
 
@@ -320,17 +321,18 @@ class MaxRule(Rule):
         max_ = rule_values
         self.message_fields = dict(field=field, max=max_)
         self.error = errors.MAX_ERROR
+        expected = float(max_)
 
-        if StringRule.valid_string(value):
+        if isinstance(value, str):
             self.error = errors.MAX_STRING_ERROR
-            return len(value) <= int(max_)
-        elif type(value) is list:
-            self.error = errors.MAX_LIST_ERROR
-            return len(value) <= int(max_)
-        elif IntegerRule.valid_integer(value):
-            return value <= int(max_)
-        elif FloatRule.valid_float(value):
-            return value <= float(max_)
+            return len(value) <= expected
+        elif isinstance(value, list) or isinstance(value, dict):
+            self.error = errors.MAX_ITEMS_ERROR
+            return len(value) <= expected
+        elif isinstance(value, int):
+            return value <= expected
+        elif isinstance(value, float):
+            return value <= expected
 
         return False
 

@@ -1,4 +1,4 @@
-from spotlight.errors import MIN_STRING_ERROR, MIN_LIST_ERROR, MIN_ERROR
+from spotlight.errors import MIN_STRING_ERROR, MIN_ERROR, MIN_ITEMS_ERROR
 from spotlight.tests.validator_test import ValidatorTest
 
 
@@ -69,7 +69,7 @@ class MinTest(ValidatorTest):
     def test_min_rule_with_list_size_expect_error(self):
         rules = {"test": "min:5"}
         data = {"test": [1, 2, 3, 4]}
-        expected = MIN_LIST_ERROR.format(field=self.field, min=5)
+        expected = MIN_ITEMS_ERROR.format(field=self.field, min=5)
 
         errors = self.validator.validate(data, rules)
         errs = errors.get(self.field)
