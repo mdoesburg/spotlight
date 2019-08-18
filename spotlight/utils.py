@@ -1,27 +1,45 @@
-import re
+from typing import Pattern, AnyStr, Any
+
+from spotlight.exceptions import FieldValueNotFoundError
 
 
-def regex_match(regex, value):
-    match = None
+def regex_match(compiled_regex: Pattern[AnyStr], value: Any) -> bool:
+    """Checks if the value is a full match of the compiled regex"""
     try:
-        match = re.match(regex, value)
+        match = compiled_regex.fullmatch(value)
     except:
         return False
-    finally:
-        return True if match else False
+    else:
+        return match is not None
 
 
-def equals(val1, val2):
-    return str(val1).lower() == str(val2).lower()
+def equal(*values: Any) -> bool:
+    """Checks if passed values are equal"""
+    return len(set([str(v) for v in values])) == 1
 
 
-def missing(input_, field):
-    # Field is missing from input
-    value = input_
-    split_field = field.split(".")
-
+def missing(data, field) -> bool:
+    """Checks if the field is missing from data"""
     try:
-        for key in split_field:
+        _get_field_value(data, field)
+    except FieldValueNotFoundError:
+        return True
+
+    return False
+
+
+def get_field_value(data, field) -> Any:
+    """Return the value of the field in the data"""
+    try:
+        return _get_field_value(data, field)
+    except FieldValueNotFoundError:
+        return None
+
+
+def _get_field_value(value, field):
+    segments = field.split(".")
+    try:
+        for key in segments:
             if not isinstance(value, dict) and not isinstance(value, list):
                 value = value.__dict__
             if key.isnumeric():
@@ -29,24 +47,26 @@ def missing(input_, field):
             else:
                 value = value[key]
     except (TypeError, AttributeError, KeyError, IndexError):
-        return True
+        raise FieldValueNotFoundError
 
-    return empty(value)
+    return value
 
 
-def empty(val):
+def empty(value) -> bool:
+    """Checks if the value is empty"""
+
     # Value is None
-    if val is None:
+    if value is None:
         return True
 
     # Empty string
-    if isinstance(val, str):
-        if val.strip() == "":
+    if isinstance(value, str):
+        if value.strip() == "":
             return True
 
     # Empty list or empty dict
-    if isinstance(val, list) or isinstance(val, dict):
-        if len(val) == 0:
+    if isinstance(value, list) or isinstance(value, dict):
+        if len(value) == 0:
             return True
 
     return False
