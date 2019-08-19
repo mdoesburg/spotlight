@@ -262,9 +262,13 @@ class Validator:
             # Values
             if isinstance(new_values, list):
                 # Field
-                self._overwrite_values_in_list(fields, new_values, field_overwrite_values, key)
+                self._overwrite_values_in_list(
+                    fields, new_values, field_overwrite_values, key
+                )
                 # Global
-                self._overwrite_values_in_list(fields, new_values, self.overwrite_values, key)
+                self._overwrite_values_in_list(
+                    fields, new_values, self.overwrite_values, key
+                )
             # Value
             elif isinstance(new_values, str):
                 # Field
@@ -381,3 +385,8 @@ class Validator:
     @staticmethod
     def valid_dict(value) -> bool:
         return rls.DictRule.valid_dict(value)
+
+    @staticmethod
+    def valid_date(value) -> bool:
+        return rls.DateRule.valid_date(value)
+

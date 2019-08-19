@@ -1,6 +1,7 @@
 import ipaddress
 import json
 import re
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 from abc import ABC, abstractmethod
@@ -580,3 +581,33 @@ class DictRule(Rule):
     @staticmethod
     def valid_dict(value) -> bool:
         return type(value) is dict
+
+
+class DateRule(Rule):
+    """Valid date matching the ISO 8601 'YYYY-MM-DD' format"""
+
+    name = "date"
+    _regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_date(value)
+
+    @property
+    def message(self) -> str:
+        return errors.DATE_ERROR
+
+    @staticmethod
+    def valid_date(value: Any) -> bool:
+        if not regex_match(DateRule._regex, value):
+            return False
+
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+        except (ValueError, TypeError):
+            return False
+
+        return True
+
+
