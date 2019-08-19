@@ -611,3 +611,25 @@ class DateRule(Rule):
         return True
 
 
+class DateFormatRule(Rule):
+    """Valid date matching the given format"""
+
+    name = "date_format"
+
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+        self.message_fields = dict(field=field, value=rule_values)
+
+        return self.valid_date_format(value, rule_values)
+
+    @property
+    def message(self) -> str:
+        return errors.DATE_FORMAT_ERROR
+
+    @staticmethod
+    def valid_date_format(value: Any, date_format: str) -> bool:
+        try:
+            datetime.strptime(value, date_format)
+        except (ValueError, TypeError):
+            return False
+
+        return True
