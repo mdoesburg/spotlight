@@ -325,9 +325,6 @@ class Validator:
 
     def _flatten_output(self, output: dict):
         for field, errors in output.items():
-            if isinstance(errors, dict):
-                self._flatten_output(errors)
-                continue
             for error in errors:
                 self._flat_list.append(error)
 
