@@ -183,9 +183,20 @@ boolean
 ```
 
 ### date
-The field under validation must be a valid date matching the ISO 8601 "YYYY-MM-DD" format.
+The field under validation must be a valid date matching the ISO 8601 "YYYY-MM-DD" format, or a specified date format. For example, a field being validated with the following format "date:%m/%d/%Y" must match the "MM/DD/YYYY" format. Date validation uses the `strptime` Python function. For more info on valid formatting symbols check the following [Python docs](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior).
 ```
 date
+```
+```
+date:format
+```
+Examples:
+```
+date:%Y-%m-%d %H:%M:%S
+
+date:%m/%d/%Y
+
+date:%Y-%m-%dT%H:%M:%S.%f
 ```
 
 ### dict
