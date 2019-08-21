@@ -188,7 +188,7 @@ class Validator:
             return self._split_rule(rule)[1]
 
     def _split_rule(self, rule: str) -> List[str]:
-        return rule.split(self._RULE_VALUE_DELIMITER)
+        return rule.split(self._RULE_VALUE_DELIMITER, 1)
 
     def _convert_data_to_dict(self):
         if not isinstance(self._data, dict):
