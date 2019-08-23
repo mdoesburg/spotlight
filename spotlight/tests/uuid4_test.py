@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from spotlight.errors import UUID4_ERROR
 from spotlight.tests.validator_test import ValidatorTest
@@ -75,8 +75,24 @@ class Uuid4Test(ValidatorTest):
             self.assertEqual(actual, False)
 
     def test_valid_uuid4_with_valid_values_expect_true(self):
-        valid_uuid4s = ["a546ce64-634b-43b3-9c32-3f0353edb294", uuid4()]
+        values = [
+            "a546ce64-634b-43b3-9c32-3f0353edb294",
+            uuid4(),
+            UUID("{12345678-1234-5678-1234-567812345678}", version=4),
+            UUID("12345678123456781234567812345678", version=4),
+            UUID("urn:uuid:12345678-1234-5678-1234-567812345678", version=4),
+            UUID(bytes=b"\x12\x34\x56\x78"*4, version=4),
+            UUID(
+                bytes_le=b"\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78",
+                version=4,
+            ),
+            UUID(
+                fields=(0x12345678, 0x1234, 0x5678, 0x12, 0x34, 0x567812345678),
+                version=4,
+            ),
+            UUID(int=0x12345678123456781234567812345678, version=4),
+        ]
 
-        for valid_uuid4 in valid_uuid4s:
-            actual = self.validator.valid_uuid4(valid_uuid4)
+        for value in values:
+            actual = self.validator.valid_uuid4(value)
             self.assertEqual(actual, True)
