@@ -65,13 +65,40 @@ class JsonTest(ValidatorTest):
 
         self.assertEqual(errs, expected)
 
-    def test_valid_json_with_string_expect_false(self):
-        actual = self.validator.valid_json("test")
+    def test_valid_json_with_invalid_values_expect_false(self):
+        values = [
+            True,
+            False,
+            -1,
+            0,
+            1,
+            2,
+            [],
+            {},
+            "",
+            set(),
+            "test",
+            "{invalid}",
+            '{"invalid"}',
+            '{"invalid":}',
+            "{invalid: data}",
+        ]
 
-        self.assertEqual(actual, False)
+        for value in values:
+            actual = self.validator.valid_json(value)
+            if actual:
+                print(value)
+                print(json.loads(value))
+            self.assertEqual(actual, False)
 
-    def test_valid_json_with_json_expect_true(self):
-        json_data = json.dumps({"key": "values"})
-        actual = self.validator.valid_json(json_data)
+    def test_valid_json_with_valid_values_expect_true(self):
+        values = [
+            json.dumps({"key": "values"}),
+            bytearray('{"key": "values"}', "utf-8"),
+            str.encode('{"key": "values"}'),
+            bytes('{"key": "values"}', "utf-8"),
+        ]
 
-        self.assertEqual(actual, True)
+        for value in values:
+            actual = self.validator.valid_json(value)
+            self.assertEqual(actual, True)
