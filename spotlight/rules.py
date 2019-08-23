@@ -2,6 +2,7 @@ import ipaddress
 import json
 import re
 from datetime import datetime
+from json import JSONDecodeError
 from typing import Any
 from uuid import UUID
 from abc import ABC, abstractmethod
@@ -503,7 +504,7 @@ class Uuid4Rule(Rule):
             uuid = str(uuid)
         try:
             val = UUID(uuid, version=4)
-        except:
+        except (TypeError, ValueError, AttributeError):
             return False
 
         return str(val) == uuid
@@ -528,7 +529,7 @@ class JsonRule(Rule):
         try:
             json.loads(value)
             return True
-        except:
+        except (TypeError, JSONDecodeError):
             return False
 
 
