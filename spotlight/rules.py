@@ -616,3 +616,20 @@ class DateTimeRule(Rule):
 
         return True
 
+
+class BeforeRule(Rule):
+
+    name = "before"
+
+    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+        after_date = data.get(rule_values)
+        self.message_fields = dict(field=field, other=after_date)
+
+        d1 = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        d2 = datetime.strptime(after_date, "%Y-%m-%d %H:%M:%S")
+
+        return d1 < d2
+
+    @property
+    def message(self) -> str:
+        return "The {field} field must be a date/time before {other}."
