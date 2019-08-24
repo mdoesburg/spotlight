@@ -386,4 +386,3 @@ class Validator:
     @staticmethod
     def valid_date_time(value: Any, date_time_format: str = None) -> bool:
         return rls.DateTimeRule.valid_date_time(value, date_time_format)
-
