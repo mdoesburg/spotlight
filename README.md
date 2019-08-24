@@ -118,7 +118,7 @@ Available methods:
 * valid_alpha_num
 * valid_alpha_num_space
 * valid_boolean
-* valid_date
+* valid_date_time
 * valid_dict
 * valid_email
 * valid_float
@@ -135,7 +135,7 @@ Available methods:
 * [alpha_num](#alpha_num)
 * [alpha_num_space](#alpha_num_space)
 * [boolean](#boolean)
-* [date](#date)
+* [date_time](#date_time)
 * [dict](#dict)
 * [email](#email)
 * [filled](#filled)
@@ -182,21 +182,13 @@ The field under validation must be a boolean.
 boolean
 ```
 
-### date
-The field under validation must be a valid date matching the ISO 8601 "YYYY-MM-DD" format, or a specified date format. For example, a field being validated with the following format "date:%m/%d/%Y" must match the "MM/DD/YYYY" format. Date validation uses the `strptime` Python function. For more info on valid formatting symbols check the following [Python docs](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior).
+### date_time
+The field under validation must be a valid date/time matching the "YYYY-MM-DD hh:mm:ss" format, or a custom specified format. For example, a field being validated with the following format "date_time:%m/%d/%Y" must match the "MM/DD/YYYY" format. The date/time validation uses the `strptime` Python function. For more info on valid formatting symbols check the following [Python docs](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior).
 ```
-date
+date_time
 ```
 ```
-date:format
-```
-Examples:
-```
-date:%Y-%m-%d %H:%M:%S
-
-date:%m/%d/%Y
-
-date:%Y-%m-%dT%H:%M:%S.%f
+date_time:format
 ```
 
 ### dict

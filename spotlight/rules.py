@@ -584,34 +584,35 @@ class DictRule(Rule):
         return type(value) is dict
 
 
-class DateRule(Rule):
+class DateTimeRule(Rule):
     """
-    Valid date matching the default ISO 8601 'YYYY-MM-DD' format, or a custom
-    specified format.
+    Valid date/time matching the default 'YYYY-MM-DD hh:mm:ss' format, or a
+    custom specified format.
     """
 
-    name = "date"
-    _regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-    _default_date_format = "%Y-%m-%d"
+    name = "date_time"
+    _regex = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+    _default_format = "%Y-%m-%d %H:%M:%S"
 
     def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
-        _date_format = rule_values or DateRule._default_date_format
-        self.message_fields = dict(field=field, value=_date_format)
+        _date_time_format = rule_values or DateTimeRule._default_format
+        self.message_fields = dict(field=field, format=_date_time_format)
 
-        return self.valid_date(value, rule_values)
+        return self.valid_date_time(value, rule_values)
 
     @property
     def message(self) -> str:
-        return errors.DATE_ERROR
+        return errors.DATE_TIME_ERROR
 
     @staticmethod
-    def valid_date(value: Any, date_format: str = None) -> bool:
-        if not date_format and not regex_match(DateRule._regex, value):
+    def valid_date_time(value: Any, date_time_format: str = None) -> bool:
+        if not date_time_format and not regex_match(DateTimeRule._regex, value):
             return False
 
         try:
-            datetime.strptime(value, date_format or DateRule._default_date_format)
+            datetime.strptime(value, date_time_format or DateTimeRule._default_format)
         except (ValueError, TypeError):
             return False
 
         return True
+

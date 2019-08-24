@@ -384,5 +384,6 @@ class Validator:
         return rls.DictRule.valid_dict(value)
 
     @staticmethod
-    def valid_date(value: Any, date_format: str = None) -> bool:
-        return rls.DateRule.valid_date(value, date_format)
+    def valid_date_time(value: Any, date_time_format: str = None) -> bool:
+        return rls.DateTimeRule.valid_date_time(value, date_time_format)
+
