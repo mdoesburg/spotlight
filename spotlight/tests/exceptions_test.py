@@ -19,7 +19,7 @@ class ExceptionsTest(ValidatorTest):
 
             class NewRule(Rule):
                 def passes(
-                    self, field: str, value: Any, rule_values: str, data: dict
+                    self, field: str, value: Any, parameters: str, validator
                 ) -> bool:
                     return True
 
@@ -36,7 +36,7 @@ class ExceptionsTest(ValidatorTest):
                 name = "required"
 
                 def passes(
-                    self, field: str, value: Any, rule_values: str, data: dict
+                    self, field: str, value: Any, parameters: str, validator
                 ) -> bool:
                     return True
 
@@ -73,9 +73,9 @@ class ExceptionsTest(ValidatorTest):
             name = "new_rule"
 
             def passes(
-                    self, field: str, value: Any, rule_values: str, data: dict
+                self, field: str, value: Any, parameters: str, validator
             ) -> bool:
-                return super().passes(field, value, rule_values, data)
+                return super().passes(field, value, parameters, validator)
 
             @property
             def message(self) -> str:
@@ -86,4 +86,3 @@ class ExceptionsTest(ValidatorTest):
 
         with pytest.raises(NotImplementedError):
             NewRule().passes("", None, "", {})
-
