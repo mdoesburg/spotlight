@@ -37,6 +37,27 @@ class Rule(ABC):
 
     @abstractmethod
     def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+        """
+        Tests if the field that is being validated passes this rule.
+
+        Parameters
+        ----------
+        field : str
+            The name of the field that is being validated.
+        value : Any
+            The value of the field that is being validated
+        parameters : str
+            Rule parameters.
+        validator : Validator
+            Instance of the validator. Can be used to access data and rules.
+            Useful for more advanced rules that are dependent on other fields.
+
+        Returns
+        -------
+        bool
+            Returns a boolean that indicates if the field that is being
+            validated passed the rule.
+        """
         raise NotImplementedError
 
     @property
