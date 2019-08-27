@@ -26,9 +26,9 @@ class Validator:
             return []
 
     def __init__(self, plugins: List[Plugin] = None):
-        self._data = None
-        self._rules = None
-        self._output = {}
+        self.data = None
+        self.rules = None
+        self.output = {}
         self._flat_list = []
 
         self.overwrite_messages = {}
@@ -38,10 +38,11 @@ class Validator:
         self._implicit_rules: List[str] = []
         self._available_rules: Dict[str, rls.Rule] = {}
 
-        self.FIELD_WILD_CARD = "*"
+        self._FIELD_WILD_CARD = "*"
         self._FIELD_DELIMITER = "."
         self._RULE_DELIMITER = "|"
-        self._RULE_VALUE_DELIMITER = ":"
+        self._RULE_PARAM_DELIMITER = ":"
+        self._RULE_PARAMS_DELIMITER = ","
         self._FIELD_KEY = "field"
 
         self._setup_default_rules()
@@ -116,9 +117,9 @@ class Validator:
             errors for that key/field. When the optional parameter `flat` is
             set to true, a list of only the error messages is returned.
         """
-        self._data = data
-        self._rules = rules
-        self._output = {}
+        self.data = data
+        self.rules = rules
+        self.output = {}
 
         self._convert_data_to_dict()
         self._validate_rules_type()
@@ -126,23 +127,23 @@ class Validator:
 
         if flat:
             self._flat_list = []
-            self._flatten_output(self._output)
+            self._flatten_output(self.output)
 
             return self._flat_list
 
-        return self._output
+        return self.output
 
     def _sub_fields(self, field) -> Iterator[str]:
         if not self._contains_wildcard(field):
             yield field
             return
 
-        root = field.split(self.FIELD_WILD_CARD)[0].strip(self._FIELD_DELIMITER)
+        root = field.split(self._FIELD_WILD_CARD)[0].strip(self._FIELD_DELIMITER)
         root_value = self._get_field_value(root)
 
         if isinstance(root_value, list):
             for i, _ in enumerate(root_value):
-                new_field = field.replace(self.FIELD_WILD_CARD, str(i), 1)
+                new_field = field.replace(self._FIELD_WILD_CARD, str(i), 1)
                 yield from self._sub_fields(new_field)
 
     def _validate_data(self):
@@ -151,7 +152,7 @@ class Validator:
             # Iterate over sub fields
             for field in self._sub_fields(raw_field):
                 # Iterate over rules
-                for rule_name, rule_values in self._rule_iterator(rules):
+                for rule_name, rule_parameters in self._rule_iterator(rules):
                     # Check if rule exists
                     if not self._rule_exists(rule_name):
                         raise RuleNotFoundError(rule_name)
@@ -162,7 +163,7 @@ class Validator:
                         value = self._get_field_value(field)
 
                         # If rule didn't pass, add error
-                        if not rule.passes(field, value, rule_values, self._data):
+                        if not rule.passes(field, value, rule_parameters, self):
                             self._add_error(rule)
 
                             # Stop
@@ -170,12 +171,12 @@ class Validator:
                                 break
 
     def _field_iterator(self) -> Iterator[Tuple[str, List[str]]]:
-        for field, rules in self._rules.items():
+        for field, rules in self.rules.items():
             yield field, self._split_rules(rules)
 
     def _rule_iterator(self, rules) -> Iterator[Tuple[str, str]]:
         for rule in rules:
-            yield self._rule_name(rule), self._rule_values(rule)
+            yield self._rule_name(rule), self._rule_parameters(rule)
 
     def _split_rules(self, rules: str) -> List[str]:
         return rules.split(self._RULE_DELIMITER)
@@ -183,29 +184,29 @@ class Validator:
     def _rule_name(self, rule: str) -> str:
         return self._split_rule(rule)[0]
 
-    def _rule_values(self, rule: str) -> Optional[str]:
-        if self._RULE_VALUE_DELIMITER in rule:
+    def _rule_parameters(self, rule: str) -> Optional[str]:
+        if self._RULE_PARAM_DELIMITER in rule:
             return self._split_rule(rule)[1]
 
     def _split_rule(self, rule: str) -> List[str]:
-        return rule.split(self._RULE_VALUE_DELIMITER, 1)
+        return rule.split(self._RULE_PARAM_DELIMITER, 1)
 
     def _convert_data_to_dict(self):
-        if not isinstance(self._data, dict):
+        if not isinstance(self.data, dict):
             try:
-                self._data = self._data.__dict__
+                self.data = self.data.__dict__
             except AttributeError:
-                raise InvalidDataError(type(self._data))
+                raise InvalidDataError(type(self.data))
 
     def _validate_rules_type(self):
-        if type(self._rules) is not dict:
-            raise InvalidRulesError(type(self._rules))
+        if type(self.rules) is not dict:
+            raise InvalidRulesError(type(self.rules))
 
     def _rule_exists(self, rule_name: str) -> bool:
         return rule_name in self._available_rules
 
     def _contains_wildcard(self, value) -> bool:
-        return self.FIELD_WILD_CARD in value
+        return self._FIELD_WILD_CARD in value
 
     def _is_validatable(self, field: str, rule_name: str) -> bool:
         return self._field_is_present(field) or self._rule_is_implicit(rule_name)
@@ -220,10 +221,10 @@ class Validator:
         field = rule.message_fields.get(self._FIELD_KEY)
         error = self._create_error(rule)
 
-        if field in self._output:
-            self._output.get(field).append(error)
+        if field in self.output:
+            self.output.get(field).append(error)
         else:
-            self._output[field] = [error]
+            self.output[field] = [error]
 
     @staticmethod
     def _find_fields_in_error(error: str, regex: bool = False) -> list:
@@ -319,7 +320,7 @@ class Validator:
         split_fields = str(field).split(self._FIELD_DELIMITER)
         for index, field in enumerate(split_fields):
             if field.isnumeric():
-                split_fields[index] = self.FIELD_WILD_CARD
+                split_fields[index] = self._FIELD_WILD_CARD
 
         return self._FIELD_DELIMITER.join(split_fields)
 
@@ -329,7 +330,7 @@ class Validator:
                 self._flat_list.append(error)
 
     def _get_field_value(self, field) -> Any:
-        return get_field_value(self._data, field)
+        return get_field_value(self.data, field)
 
     @staticmethod
     def valid_email(email) -> bool:

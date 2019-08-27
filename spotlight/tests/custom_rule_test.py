@@ -9,7 +9,7 @@ class ExactlyFiveCharsRule(Rule):
 
     name = "five_chars"
 
-    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
         self.message_fields = dict(field=field, name="you.can.replace.this")
 
         return len(value) == 5
@@ -24,7 +24,7 @@ class UppercaseRule(Rule):
 
     name = "uppercase"
 
-    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
         self.message_fields = dict(field=field)
 
         return value.upper() == value
