@@ -86,9 +86,6 @@ class JsonTest(ValidatorTest):
 
         for value in values:
             actual = self.validator.valid_json(value)
-            if actual:
-                print(value)
-                print(json.loads(value))
             self.assertEqual(actual, False)
 
     def test_valid_json_with_valid_values_expect_true(self):
