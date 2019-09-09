@@ -7,7 +7,7 @@ from typing import Any, Tuple, List
 from uuid import UUID
 from abc import ABC, abstractmethod
 
-from spotlight import errors
+from spotlight import errors, config
 from spotlight.exceptions import (
     RuleNameAlreadyExistsError,
     AttributeNotImplementedError,
@@ -617,7 +617,7 @@ class DateTimeRule(Rule):
 
     name = "date_time"
     stop = True
-    default_format = "%Y-%m-%d %H:%M:%S"
+    default_format = config.DEFAULT_DATE_TIME_FORMAT
 
     _regex = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 
