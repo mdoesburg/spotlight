@@ -1,6 +1,6 @@
 import re
 from string import Formatter
-from typing import Union, List, overload, Tuple, Iterator, Dict, Optional, Any
+from typing import Union, List, overload, Tuple, Iterator, Dict, Any
 
 from spotlight import rules as rls, config
 from spotlight.exceptions import RuleNotFoundError, InvalidDataError, InvalidRulesError
@@ -170,7 +170,7 @@ class Validator:
         for field, rules in self.rules.items():
             yield field, self._split_rules(rules)
 
-    def rule_iterator(self, rules) -> Iterator[Tuple[str, Optional[str]]]:
+    def rule_iterator(self, rules) -> Iterator[Tuple[str, List[str]]]:
         for rule in rules:
             yield self._rule_name(rule), self._rule_parameters(rule)
 
@@ -180,9 +180,11 @@ class Validator:
     def _rule_name(self, rule: str) -> str:
         return self._split_rule(rule)[0]
 
-    def _rule_parameters(self, rule: str) -> Optional[str]:
+    def _rule_parameters(self, rule: str) -> List[str]:
         if self.config.RULE_PARAM_DELIMITER in rule:
-            return self._split_rule(rule)[1]
+            return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
+
+        return []
 
     def _split_rule(self, rule: str) -> List[str]:
         return rule.split(self.config.RULE_PARAM_DELIMITER, 1)

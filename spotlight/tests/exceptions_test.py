@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 import pytest
 
@@ -19,7 +19,7 @@ class ExceptionsTest(ValidatorTest):
 
             class NewRule(Rule):
                 def passes(
-                    self, field: str, value: Any, parameters: str, validator
+                    self, field: str, value: Any, parameters: List[str], validator
                 ) -> bool:
                     return True
 
@@ -36,7 +36,7 @@ class ExceptionsTest(ValidatorTest):
                 name = "required"
 
                 def passes(
-                    self, field: str, value: Any, parameters: str, validator
+                    self, field: str, value: Any, parameters: List[str], validator
                 ) -> bool:
                     return True
 
@@ -73,7 +73,7 @@ class ExceptionsTest(ValidatorTest):
             name = "new_rule"
 
             def passes(
-                self, field: str, value: Any, parameters: str, validator
+                self, field: str, value: Any, parameters: List[str], validator
             ) -> bool:
                 return super().passes(field, value, parameters, validator)
 
@@ -82,7 +82,7 @@ class ExceptionsTest(ValidatorTest):
                 return super().message
 
         with pytest.raises(NotImplementedError):
-            print(NewRule().message)
+            msg = NewRule().message
 
         with pytest.raises(NotImplementedError):
-            NewRule().passes("", None, "", {})
+            NewRule().passes("", None, [], {})

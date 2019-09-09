@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from spotlight.tests.validator_test import ValidatorTest
 from spotlight.rules import Rule
@@ -9,7 +9,7 @@ class ExactlyFiveCharsRule(Rule):
 
     name = "five_chars"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field, name="you.can.replace.this")
 
         return len(value) == 5
@@ -24,7 +24,7 @@ class UppercaseRule(Rule):
 
     name = "uppercase"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return value.upper() == value

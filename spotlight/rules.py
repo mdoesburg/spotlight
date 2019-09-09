@@ -3,7 +3,7 @@ import json
 import re
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, Tuple
+from typing import Any, Tuple, List
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -37,7 +37,7 @@ class Rule(ABC):
         cls.subclasses.append(cls)
 
     @abstractmethod
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         """
         Tests if the field that is being validated passes this rule.
 
@@ -74,7 +74,7 @@ class RequiredRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return not missing(validator.data, field) and not empty(value)
@@ -91,8 +91,8 @@ class RequiredWithoutRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        other_fields = parameters.split(",")
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other_fields = parameters
         data = validator.data
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
@@ -113,8 +113,8 @@ class RequiredWithRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        other_fields = parameters.split(",")
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other_fields = parameters
         data = validator.data
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
@@ -135,8 +135,8 @@ class RequiredIfRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        other, val = parameters.split(",")
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other, val = parameters
         data = validator.data
         other_val = data.get(other)
         self.message_fields = dict(field=field, other=other, value=val)
@@ -158,8 +158,8 @@ class RequiredUnlessRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        other, val = parameters.split(",")
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other, val = parameters
         data = validator.data
         other_val = data.get(other)
         self.message_fields = dict(field=field, other=other, value=val)
@@ -180,8 +180,8 @@ class NotWithRule(Rule):
     name = "not_with"
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        other = parameters
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other = parameters[0]
         data = validator.data
         self.message_fields = dict(field=field, other=other)
 
@@ -202,7 +202,7 @@ class FilledRule(Rule):
     implicit = True
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         if not missing(validator.data, field) and empty(value):
@@ -223,7 +223,7 @@ class EmailRule(Rule):
         r"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"
     )
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_email(value)
@@ -251,7 +251,7 @@ class UrlRule(Rule):
         re.IGNORECASE,
     )
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_url(value)
@@ -270,7 +270,7 @@ class IpRule(Rule):
 
     name = "ip"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_ip(value)
@@ -299,8 +299,8 @@ class MinRule(Rule):
         super().__init__()
         self.error = None
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        min_ = parameters
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        min_ = parameters[0]
         self.message_fields = dict(field=field, min=min_)
         self.error = errors.MIN_ERROR
         expected = float(min_)
@@ -332,8 +332,8 @@ class MaxRule(Rule):
         super().__init__()
         self.error = None
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        max_ = parameters
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        max_ = parameters[0]
         self.message_fields = dict(field=field, max=max_)
         self.error = errors.MAX_ERROR
         expected = float(max_)
@@ -364,11 +364,10 @@ class InRule(Rule):
 
     name = "in"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        _parameters = parameters.split(",")
-        self.message_fields = dict(field=field, values=_parameters)
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self.message_fields = dict(field=field, values=parameters)
 
-        return str(value) in _parameters
+        return str(value) in parameters
 
     @property
     def message(self) -> str:
@@ -381,7 +380,7 @@ class AlphaNumRule(Rule):
     name = "alpha_num"
     _regex = re.compile(r"^[a-zA-Z0-9]+$")
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_alpha_num(value)
@@ -401,7 +400,7 @@ class AlphaNumSpaceRule(Rule):
     name = "alpha_num_space"
     _regex = re.compile(r"^[a-zA-Z0-9 ]+$")
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_alpha_num_space(value)
@@ -420,7 +419,7 @@ class StringRule(Rule):
 
     name = "string"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_string(value)
@@ -439,7 +438,7 @@ class IntegerRule(Rule):
 
     name = "integer"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_integer(value)
@@ -458,7 +457,7 @@ class FloatRule(Rule):
 
     name = "float"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_float(value)
@@ -477,7 +476,7 @@ class BooleanRule(Rule):
 
     name = "boolean"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_boolean(value)
@@ -497,7 +496,7 @@ class ListRule(Rule):
     name = "list"
     stop = True
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_list(value)
@@ -516,7 +515,7 @@ class Uuid4Rule(Rule):
 
     name = "uuid4"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_uuid4(value)
@@ -542,7 +541,7 @@ class JsonRule(Rule):
 
     name = "json"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_json(value)
@@ -565,7 +564,7 @@ class AcceptedRule(Rule):
 
     name = "accepted"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         accepted_values = ["yes", "on", 1, True]
         self.message_fields = dict(field=field)
 
@@ -581,11 +580,10 @@ class StartsWithRule(Rule):
 
     name = "starts_with"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        _parameters = parameters.split(",")
-        self.message_fields = dict(field=field, values=_parameters)
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self.message_fields = dict(field=field, values=parameters)
 
-        return any([str(value).startswith(rule_val) for rule_val in _parameters])
+        return any([str(value).startswith(rule_val) for rule_val in parameters])
 
     @property
     def message(self) -> str:
@@ -597,7 +595,7 @@ class DictRule(Rule):
 
     name = "dict"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return self.valid_dict(value)
@@ -623,11 +621,12 @@ class DateTimeRule(Rule):
 
     _regex = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        _date_time_format = parameters or DateTimeRule.default_format
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        supplied_format = parameters[0] if parameters else None
+        _date_time_format = supplied_format or DateTimeRule.default_format
         self.message_fields = dict(field=field, format=_date_time_format)
 
-        return self.valid_date_time(value, parameters)
+        return self.valid_date_time(value, supplied_format)
 
     @property
     def message(self) -> str:
@@ -651,9 +650,12 @@ class BeforeRule(Rule):
 
     name = "before"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        supplied_field_or_format = parameters[0] if parameters else None
         before_date, before_format = self.date_and_format(field, validator)
-        after_date, after_format = self.date_and_format(parameters, validator)
+        after_date, after_format = self.date_and_format(
+            supplied_field_or_format, validator
+        )
         self.message_fields = dict(field=field, other=after_date)
 
         return before_date < after_date
@@ -684,7 +686,7 @@ class BeforeRule(Rule):
             rules = validator.field_rules(field)
             for name, parameters in validator.rule_iterator(rules):
                 if name == DateTimeRule.name and parameters:
-                    date_time_format = parameters
+                    date_time_format = parameters[0]
 
         return date_time_format or DateTimeRule.default_format
 
@@ -698,9 +700,12 @@ class AfterRule(Rule):
 
     name = "after"
 
-    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        supplied_field_or_format = parameters[0] if parameters else None
         after_date, after_format = BeforeRule.date_and_format(field, validator)
-        before_date, before_format = BeforeRule.date_and_format(parameters, validator)
+        before_date, before_format = BeforeRule.date_and_format(
+            supplied_field_or_format, validator
+        )
         self.message_fields = dict(field=field, other=before_date)
 
         return after_date > before_date
