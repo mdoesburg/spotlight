@@ -1,5 +1,6 @@
 from typing import Pattern, AnyStr, Any
 
+from spotlight import config
 from spotlight.exceptions import FieldValueNotFoundError
 
 
@@ -37,7 +38,7 @@ def get_field_value(data, field) -> Any:
 
 
 def _get_field_value(value, field):
-    segments = field.split(".")
+    segments = field.split(config.FIELD_DELIMITER)
     try:
         for key in segments:
             if not isinstance(value, dict) and not isinstance(value, list):

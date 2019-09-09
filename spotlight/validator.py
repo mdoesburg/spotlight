@@ -2,7 +2,7 @@ import re
 from string import Formatter
 from typing import Union, List, overload, Tuple, Iterator, Dict, Optional, Any
 
-from spotlight import rules as rls
+from spotlight import rules as rls, config
 from spotlight.exceptions import RuleNotFoundError, InvalidDataError, InvalidRulesError
 from spotlight.utils import get_field_value
 
@@ -29,6 +29,7 @@ class Validator:
         self.data = None
         self.rules = None
         self.output = {}
+        self.config = config
         self._flat_list = []
 
         self.overwrite_messages = {}
@@ -37,13 +38,6 @@ class Validator:
 
         self._implicit_rules: List[str] = []
         self._available_rules: Dict[str, rls.Rule] = {}
-
-        self._FIELD_WILD_CARD = "*"
-        self._FIELD_DELIMITER = "."
-        self._RULE_DELIMITER = "|"
-        self._RULE_PARAM_DELIMITER = ":"
-        self._RULE_PARAMS_DELIMITER = ","
-        self._FIELD_KEY = "field"
 
         self._setup_default_rules()
         self._setup_plugins(plugins or [])
@@ -138,12 +132,14 @@ class Validator:
             yield field
             return
 
-        root = field.split(self._FIELD_WILD_CARD)[0].strip(self._FIELD_DELIMITER)
+        root = field.split(self.config.FIELD_WILD_CARD)[0].strip(
+            self.config.FIELD_DELIMITER
+        )
         root_value = self._get_field_value(root)
 
         if isinstance(root_value, list):
             for i, _ in enumerate(root_value):
-                new_field = field.replace(self._FIELD_WILD_CARD, str(i), 1)
+                new_field = field.replace(self.config.FIELD_WILD_CARD, str(i), 1)
                 yield from self._sub_fields(new_field)
 
     def _validate_data(self):
@@ -179,17 +175,17 @@ class Validator:
             yield self._rule_name(rule), self._rule_parameters(rule)
 
     def _split_rules(self, rules: str) -> List[str]:
-        return rules.split(self._RULE_DELIMITER)
+        return rules.split(self.config.RULE_DELIMITER)
 
     def _rule_name(self, rule: str) -> str:
         return self._split_rule(rule)[0]
 
-    def _rule_parameters(self, rule: str) -> Optional[str]:
-        if self._RULE_PARAM_DELIMITER in rule:
-            return self._split_rule(rule)[1]
+    def _rule_parameters(self, rule: str) -> Optional[List[str]]:
+        if self.config.RULE_PARAM_DELIMITER in rule:
+            return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
 
     def _split_rule(self, rule: str) -> List[str]:
-        return rule.split(self._RULE_PARAM_DELIMITER, 1)
+        return rule.split(self.config.RULE_PARAM_DELIMITER, 1)
 
     def _convert_data_to_dict(self):
         if not isinstance(self.data, dict):
@@ -206,7 +202,7 @@ class Validator:
         return rule_name in self._available_rules
 
     def _contains_wildcard(self, value) -> bool:
-        return self._FIELD_WILD_CARD in value
+        return self.config.FIELD_WILD_CARD in value
 
     def _is_validatable(self, field: str, rule_name: str) -> bool:
         return self._field_is_present(field) or self._rule_is_implicit(rule_name)
@@ -218,7 +214,7 @@ class Validator:
         return rule_name in self._implicit_rules
 
     def _add_error(self, rule: rls.Rule):
-        field = rule.message_fields.get(self._FIELD_KEY)
+        field = rule.message_fields.get(self.config.FIELD_KEY)
         error = self._create_error(rule)
 
         if field in self.output:
@@ -236,9 +232,9 @@ class Validator:
     def _create_error(self, rule: rls.Rule):
         error = rule.message
         fields = rule.message_fields
-        field = fields.get(self._FIELD_KEY)
+        field = fields.get(self.config.FIELD_KEY)
         field = self._convert_field_to_wildcard_field(field)
-        combined_field = field + self._FIELD_DELIMITER + rule.name
+        combined_field = field + self.config.FIELD_DELIMITER + rule.name
 
         # Overwrite values
         fields = self._overwrite_values(field, fields)
@@ -317,12 +313,12 @@ class Validator:
         return fields
 
     def _convert_field_to_wildcard_field(self, field) -> str:
-        split_fields = str(field).split(self._FIELD_DELIMITER)
+        split_fields = str(field).split(self.config.FIELD_DELIMITER)
         for index, field in enumerate(split_fields):
             if field.isnumeric():
-                split_fields[index] = self._FIELD_WILD_CARD
+                split_fields[index] = self.config.FIELD_WILD_CARD
 
-        return self._FIELD_DELIMITER.join(split_fields)
+        return self.config.FIELD_DELIMITER.join(split_fields)
 
     def _flatten_output(self, output: dict):
         for field, errors in output.items():
