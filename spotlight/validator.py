@@ -181,10 +181,10 @@ class Validator:
         return self._split_rule(rule)[0]
 
     def _rule_parameters(self, rule: str) -> List[str]:
-        if self.config.RULE_PARAM_DELIMITER in rule:
-            return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
+        if self.config.RULE_PARAM_DELIMITER not in rule:
+            return []
 
-        return []
+        return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
 
     def _split_rule(self, rule: str) -> List[str]:
         return rule.split(self.config.RULE_PARAM_DELIMITER, 1)
