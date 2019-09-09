@@ -1,6 +1,8 @@
 ACCEPTED_ERROR = "The {field} field must be accepted."
+AFTER_ERROR = "The {field} field must be a date/time after {other}."
 ALPHA_NUM_ERROR = "The {field} field can only contain letters and numbers."
 ALPHA_NUM_SPACE_ERROR = "The {field} field can only contain letters, numbers and spaces."
+BEFORE_ERROR = "The {field} field must be a date/time before {other}."
 BOOLEAN_ERROR = "The {field} field must be a boolean."
 DATE_TIME_ERROR = "The {field} field has to be a valid date/time matching the {format} format."
 DICT_ERROR = "The {field} field must be a dict."

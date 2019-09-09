@@ -17,9 +17,7 @@ class InvalidDataError(Exception):
 
 class InvalidRulesError(Exception):
     def __init__(self, rules_type: type):
-        super().__init__(
-            f"expected 'dict' got '{rules_type}'"
-        )
+        super().__init__(f"expected 'dict' got '{rules_type}'")
 
 
 class AttributeNotImplementedError(Exception):
@@ -31,3 +29,15 @@ class AttributeNotImplementedError(Exception):
 
 class FieldValueNotFoundError(Exception):
     pass
+
+
+class InvalidRuleParameters(Exception):
+    def __init__(self):
+        super().__init__(
+            f"something went wrong parsing the rule parameters, make sure the format is correct"
+        )
+
+
+class InvalidDateTimeFormat(Exception):
+    def __init__(self):
+        super().__init__(f"invalid date time format")

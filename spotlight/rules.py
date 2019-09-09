@@ -3,7 +3,7 @@ import json
 import re
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any
+from typing import Any, Tuple
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -11,6 +11,7 @@ from spotlight import errors
 from spotlight.exceptions import (
     RuleNameAlreadyExistsError,
     AttributeNotImplementedError,
+    InvalidDateTimeFormat,
 )
 from spotlight.utils import missing, equal, empty, regex_match
 
@@ -617,11 +618,13 @@ class DateTimeRule(Rule):
     """
 
     name = "date_time"
+    stop = True
+    default_format = "%Y-%m-%d %H:%M:%S"
+
     _regex = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
-    _default_format = "%Y-%m-%d %H:%M:%S"
 
     def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
-        _date_time_format = parameters or DateTimeRule._default_format
+        _date_time_format = parameters or DateTimeRule.default_format
         self.message_fields = dict(field=field, format=_date_time_format)
 
         return self.valid_date_time(value, parameters)
@@ -636,7 +639,7 @@ class DateTimeRule(Rule):
             return False
 
         try:
-            datetime.strptime(value, date_time_format or DateTimeRule._default_format)
+            datetime.strptime(value, date_time_format or DateTimeRule.default_format)
         except (ValueError, TypeError):
             return False
 
@@ -644,18 +647,64 @@ class DateTimeRule(Rule):
 
 
 class BeforeRule(Rule):
+    """Date/time that must occur before another date/time."""
 
     name = "before"
 
-    def passes(self, field: str, value: Any, rule_values: str, validator) -> bool:
-        after_date = validator.data.get(rule_values)
+    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+        before_date, before_format = self.date_and_format(field, validator)
+        after_date, after_format = self.date_and_format(parameters, validator)
         self.message_fields = dict(field=field, other=after_date)
 
-        d1 = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-        d2 = datetime.strptime(after_date, "%Y-%m-%d %H:%M:%S")
+        return before_date < after_date
 
-        return d1 < d2
+    @staticmethod
+    def date_and_format(field, validator) -> Tuple[datetime, str]:
+        after_format = DateTimeRule.default_format
+
+        # First try the value as a datetime string with the default format. If
+        # it fails, try and find out if a datetime format has been specified in
+        # the rule set.
+        try:
+            after_date = datetime.strptime(field, after_format)
+        except (ValueError, TypeError):
+            after_format = BeforeRule.date_time_field_format(field, validator)
+            value = validator.data.get(field)
+            try:
+                after_date = datetime.strptime(value, after_format)
+            except (ValueError, TypeError):
+                raise InvalidDateTimeFormat
+
+        return after_date, after_format
+
+    @staticmethod
+    def date_time_field_format(field, validator) -> str:
+        date_time_format = None
+        if field in validator.rules:
+            rules = validator.field_rules(field)
+            for name, parameters in validator.rule_iterator(rules):
+                if name == DateTimeRule.name and parameters:
+                    date_time_format = parameters
+
+        return date_time_format or DateTimeRule.default_format
 
     @property
     def message(self) -> str:
-        return "The {field} field must be a date/time before {other}."
+        return errors.BEFORE_ERROR
+
+
+class AfterRule(Rule):
+    """Date/time that must occur after another date/time."""
+
+    name = "after"
+
+    def passes(self, field: str, value: Any, parameters: str, validator) -> bool:
+        after_date, after_format = BeforeRule.date_and_format(field, validator)
+        before_date, before_format = BeforeRule.date_and_format(parameters, validator)
+        self.message_fields = dict(field=field, other=before_date)
+
+        return after_date > before_date
+
+    @property
+    def message(self) -> str:
+        return errors.AFTER_ERROR

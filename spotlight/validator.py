@@ -148,7 +148,7 @@ class Validator:
             # Iterate over sub fields
             for field in self._sub_fields(raw_field):
                 # Iterate over rules
-                for rule_name, rule_parameters in self._rule_iterator(rules):
+                for rule_name, rule_parameters in self.rule_iterator(rules):
                     # Check if rule exists
                     if not self._rule_exists(rule_name):
                         raise RuleNotFoundError(rule_name)
@@ -170,7 +170,7 @@ class Validator:
         for field, rules in self.rules.items():
             yield field, self._split_rules(rules)
 
-    def _rule_iterator(self, rules) -> Iterator[Tuple[str, str]]:
+    def rule_iterator(self, rules) -> Iterator[Tuple[str, Optional[List[str]]]]:
         for rule in rules:
             yield self._rule_name(rule), self._rule_parameters(rule)
 
@@ -327,6 +327,9 @@ class Validator:
 
     def _get_field_value(self, field) -> Any:
         return get_field_value(self.data, field)
+
+    def field_rules(self, field: str) -> List[str]:
+        return self._split_rules(self.rules.get(field))
 
     @staticmethod
     def valid_email(email) -> bool:
