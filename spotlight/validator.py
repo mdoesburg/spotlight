@@ -170,7 +170,7 @@ class Validator:
         for field, rules in self.rules.items():
             yield field, self._split_rules(rules)
 
-    def rule_iterator(self, rules) -> Iterator[Tuple[str, Optional[List[str]]]]:
+    def rule_iterator(self, rules) -> Iterator[Tuple[str, Optional[str]]]:
         for rule in rules:
             yield self._rule_name(rule), self._rule_parameters(rule)
 
@@ -180,9 +180,9 @@ class Validator:
     def _rule_name(self, rule: str) -> str:
         return self._split_rule(rule)[0]
 
-    def _rule_parameters(self, rule: str) -> Optional[List[str]]:
+    def _rule_parameters(self, rule: str) -> Optional[str]:
         if self.config.RULE_PARAM_DELIMITER in rule:
-            return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
+            return self._split_rule(rule)[1]
 
     def _split_rule(self, rule: str) -> List[str]:
         return rule.split(self.config.RULE_PARAM_DELIMITER, 1)
