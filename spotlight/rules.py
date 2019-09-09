@@ -283,10 +283,11 @@ class IpRule(Rule):
     def valid_ip(ip) -> bool:
         if not StringRule.valid_string(ip) and not IntegerRule.valid_integer(ip):
             return False
+
         try:
             ipaddress.ip_address(ip)
             return True
-        except:
+        except ValueError:
             return False
 
 
