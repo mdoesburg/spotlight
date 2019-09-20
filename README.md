@@ -192,7 +192,7 @@ The field under validation may have alpha-numeric characters, as well as spaces.
 alpha_num_space
 ```
 
-### Before
+### before
 The field under validation must be a value before a given date/time. For more details about formatting see the [date_time](#date_time) rule.
 ```
 before:2019-12-31 12:00:00
