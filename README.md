@@ -132,8 +132,10 @@ Available methods:
 
 ## Available Rules
 * [accepted](#accepted)
+* [after](#after)
 * [alpha_num](#alpha_num)
 * [alpha_num_space](#alpha_num_space)
+* [before](#before)
 * [boolean](#boolean)
 * [date_time](#date_time)
 * [dict](#dict)
@@ -164,6 +166,16 @@ The field under validation must be yes, on, 1, or true. This is useful for valid
 accepted
 ```
 
+### after
+The field under validation must be a value after a given date/time.
+```
+after:2019-12-31 12:00:00
+```
+Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
+```
+after:some_field
+```
+
 ### alpha_num
 The field under validation must be entirely alpha-numeric characters.
 ```
@@ -174,6 +186,16 @@ alpha_num
 The field under validation may have alpha-numeric characters, as well as spaces.
 ```
 alpha_num_space
+```
+
+### Before
+The field under validation must be a value before a given date/time.
+```
+before:2019-12-31 12:00:00
+```
+Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
+```
+before:some_field
 ```
 
 ### boolean
