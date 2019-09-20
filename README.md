@@ -167,9 +167,13 @@ accepted
 ```
 
 ### after
-The field under validation must be a value after a given date/time.
+The field under validation must be a value after a given date/time. For more details about formatting see the [date_time](#date_time) rule.
 ```
 after:2019-12-31 12:00:00
+```
+If the after rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the after rule as well:
+```
+date_time:%H:%M:%S|after:12:00:00
 ```
 Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
 ```
@@ -189,9 +193,13 @@ alpha_num_space
 ```
 
 ### Before
-The field under validation must be a value before a given date/time.
+The field under validation must be a value before a given date/time. For more details about formatting see the [date_time](#date_time) rule.
 ```
 before:2019-12-31 12:00:00
+```
+If the before rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the after rule as well:
+```
+date_time:%H:%M:%S|before:12:00:00
 ```
 Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
 ```
