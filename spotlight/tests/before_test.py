@@ -97,7 +97,7 @@ class BeforeTest(ValidatorTest):
         field = "start_time"
         rules = {"start_time": "date_time|before:end_time", "end_time": "date_time"}
         data = {"start_time": "2019-08-24 16:48:00", "end_time": "2019-08-24 16:48:00"}
-        expected = BEFORE_ERROR.format(field=field, other="2019-08-24 16:48:00")
+        expected = BEFORE_ERROR.format(field=field, other="end_time")
 
         errors = self.validator.validate(data, rules)
         errs = errors.get(field)
@@ -107,6 +107,22 @@ class BeforeTest(ValidatorTest):
     def test_before_rule_with_invalid_other_field_expect_exception(self):
         rules = {"start_time": "date_time|before:end_time", "end_time": "date_time"}
         data = {"start_time": "2019-08-24 16:48:00", "end_time": "invalid"}
+
+        with pytest.raises(InvalidDateTimeFormat):
+            self.validator.validate(data, rules)
+
+    def test_before_rule_with_format_value_expect_no_error(self):
+        rules = {"start_time": "date_time:%H:%M:%S|before:12:00:00"}
+        data = {"start_time": "11:59:59"}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_rule_with_invalid_value_expect_exception(self):
+        rules = {"start_time": "date_time|before:12:00:00"}
+        data = {"start_time": "2019-06-01 11:59:59"}
 
         with pytest.raises(InvalidDateTimeFormat):
             self.validator.validate(data, rules)
