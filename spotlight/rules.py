@@ -653,31 +653,36 @@ class BeforeRule(Rule):
 
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         supplied_field_or_format = parameters[0] if parameters else None
-        before_date, before_format = self.date_and_format(field, validator)
+        before_date, before_format = self.date_and_format(field, field, validator)
         after_date, after_format = self.date_and_format(
-            supplied_field_or_format, validator
+            field, supplied_field_or_format, validator
         )
-        self.message_fields = dict(field=field, other=after_date)
+        self.message_fields = dict(field=field, other=supplied_field_or_format)
 
         return before_date < after_date
 
     @staticmethod
-    def date_and_format(field, validator) -> Tuple[datetime, str]:
+    def date_and_format(field: str, field_or_date_time: str, validator) -> Tuple[datetime, str]:
         after_format = DateTimeRule.default_format
 
         # First try the value as a datetime string with the default format. If
         # it fails, try and find out if a datetime format has been specified in
         # the rule set.
         try:
-            after_date = datetime.strptime(field, after_format)
+            after_date = datetime.strptime(field_or_date_time, after_format)
         except (ValueError, TypeError):
-            after_format = BeforeRule.date_time_field_format(field, validator)
-            value = validator.data.get(field)
+            after_format = BeforeRule.date_time_field_format(field_or_date_time, validator)
+            value = validator.data.get(field_or_date_time)
             try:
                 after_date = datetime.strptime(value, after_format)
             except (ValueError, TypeError):
-                raise InvalidDateTimeFormat
+                after_format = BeforeRule.date_time_field_format(field, validator)
+                try:
+                    after_date = datetime.strptime(field_or_date_time, after_format)
+                except (ValueError, TypeError):
+                    raise InvalidDateTimeFormat
 
+        print(after_date, after_format)
         return after_date, after_format
 
     @staticmethod
@@ -703,11 +708,11 @@ class AfterRule(Rule):
 
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         supplied_field_or_format = parameters[0] if parameters else None
-        after_date, after_format = BeforeRule.date_and_format(field, validator)
+        after_date, after_format = BeforeRule.date_and_format(field, field, validator)
         before_date, before_format = BeforeRule.date_and_format(
-            supplied_field_or_format, validator
+            field, supplied_field_or_format, validator
         )
-        self.message_fields = dict(field=field, other=before_date)
+        self.message_fields = dict(field=field, other=supplied_field_or_format)
 
         return after_date > before_date
 
