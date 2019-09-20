@@ -682,7 +682,6 @@ class BeforeRule(Rule):
                 except (ValueError, TypeError):
                     raise InvalidDateTimeFormat
 
-        print(after_date, after_format)
         return after_date, after_format
 
     @staticmethod
