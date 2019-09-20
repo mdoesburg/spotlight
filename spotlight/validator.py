@@ -334,55 +334,55 @@ class Validator:
         return self._split_rules(self.rules.get(field))
 
     @staticmethod
-    def valid_email(email) -> bool:
-        return rls.EmailRule.valid_email(email)
+    def valid_email(value: Any) -> bool:
+        return rls.EmailRule.valid_email(value)
 
     @staticmethod
-    def valid_url(url) -> bool:
-        return rls.UrlRule.valid_url(url)
+    def valid_url(value: Any) -> bool:
+        return rls.UrlRule.valid_url(value)
 
     @staticmethod
-    def valid_ip(ip) -> bool:
-        return rls.IpRule.valid_ip(ip)
+    def valid_ip(value: Any) -> bool:
+        return rls.IpRule.valid_ip(value)
 
     @staticmethod
-    def valid_uuid4(uuid) -> bool:
-        return rls.Uuid4Rule.valid_uuid4(uuid)
+    def valid_uuid4(value: Any) -> bool:
+        return rls.Uuid4Rule.valid_uuid4(value)
 
     @staticmethod
-    def valid_string(string) -> bool:
-        return rls.StringRule.valid_string(string)
+    def valid_string(value: Any) -> bool:
+        return rls.StringRule.valid_string(value)
 
     @staticmethod
-    def valid_integer(integer) -> bool:
-        return rls.IntegerRule.valid_integer(integer)
+    def valid_integer(value: Any) -> bool:
+        return rls.IntegerRule.valid_integer(value)
 
     @staticmethod
-    def valid_float(float_) -> bool:
-        return rls.FloatRule.valid_float(float_)
+    def valid_float(value: Any) -> bool:
+        return rls.FloatRule.valid_float(value)
 
     @staticmethod
-    def valid_boolean(boolean) -> bool:
-        return rls.BooleanRule.valid_boolean(boolean)
+    def valid_boolean(value: Any) -> bool:
+        return rls.BooleanRule.valid_boolean(value)
 
     @staticmethod
-    def valid_json(value) -> bool:
+    def valid_json(value: Any) -> bool:
         return rls.JsonRule.valid_json(value)
 
     @staticmethod
-    def valid_alpha_num(value) -> bool:
+    def valid_alpha_num(value: Any) -> bool:
         return rls.AlphaNumRule.valid_alpha_num(value)
 
     @staticmethod
-    def valid_alpha_num_space(value) -> bool:
+    def valid_alpha_num_space(value: Any) -> bool:
         return rls.AlphaNumSpaceRule.valid_alpha_num_space(value)
 
     @staticmethod
-    def valid_list(value) -> bool:
+    def valid_list(value: Any) -> bool:
         return rls.ListRule.valid_list(value)
 
     @staticmethod
-    def valid_dict(value) -> bool:
+    def valid_dict(value: Any) -> bool:
         return rls.DictRule.valid_dict(value)
 
     @staticmethod
