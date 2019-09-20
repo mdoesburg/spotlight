@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="spotlight",
-    version="0.2.6",
+    version="1.0.0",
     author="Michiel Doesburg",
     author_email="michiel@moddix.com",
     description="Laravel style input validation for Python.",
