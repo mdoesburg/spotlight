@@ -5,7 +5,7 @@ Laravel style data validation for Python.
 * [Installation](#installation)
 * [Dependencies](#dependencies)
 * [Usage](#usage)
-  * [Simple Input Examples](#simple-input-examples)
+  * [Simple Examples](#simple-examples)
   * [Direct Validation](#direct-validation)
 * [Available Rules](#available-rules)
 * [Advanced Usage](#advanced-usage)
@@ -29,7 +29,7 @@ pip install spotlight
 from spotlight.validator import Validator
 ```
 
-### Simple Input Examples
+### Simple Examples
 ```python
 rules = {
     "email": "required|email",
@@ -38,7 +38,7 @@ rules = {
     "password": "required|min:8|max:255"
 }
 
-input_ = {
+data = {
     "email": "john.doe@example.com",
     "first_name": "John",
     "last_name": "Doe",
@@ -46,7 +46,7 @@ input_ = {
 }
 
 validator = Validator()
-errors = validator.validate(input_, rules)
+errors = validator.validate(data, rules)
 ```
 
 Nested validation:
@@ -61,7 +61,7 @@ rules = {
     }
 }
 
-input_ = {
+data = {
     "token": "test-token",
     "person": {
         "first_name": "John",
@@ -72,7 +72,7 @@ input_ = {
 }
 
 validator = Validator()
-errors = validator.validate(input_, rules)
+errors = validator.validate(data, rules)
 ```
 
 List validation:
@@ -82,7 +82,7 @@ rules = {
     "players.*.username": "required"
 }
 
-input_ = {
+data = {
     "players": [
         {
             "username": "Player 1"
@@ -94,7 +94,7 @@ input_ = {
 }
 
 validator = Validator()
-errors = validator.validate(input_, rules)
+errors = validator.validate(data, rules)
 ```
 
 ### Direct Validation
@@ -171,10 +171,12 @@ The field under validation must be a value after a given date/time. For more det
 ```
 after:2019-12-31 12:00:00
 ```
+
 If the after rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the after rule as well:
 ```
 date_time:%H:%M:%S|after:12:00:00
 ```
+
 Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
 ```
 after:some_field
@@ -197,10 +199,12 @@ The field under validation must be a value before a given date/time. For more de
 ```
 before:2019-12-31 12:00:00
 ```
+
 If the before rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the after rule as well:
 ```
 date_time:%H:%M:%S|before:12:00:00
 ```
+
 Instead of passing a date/time string to be evaluated by the `strptime` Python function, you may specify another field to compare against the date/time:
 ```
 before:some_field
@@ -371,6 +375,7 @@ validator.overwrite_messages = {
     "first_name": "Hey! This field contains an error!"
 }
 ```
+
 You can overwrite an error message for a specific rule of a specific field. In the example below we are overwriting the 'first_name.required' error message:
 ```
 validator = Validator()
@@ -393,18 +398,37 @@ validator.overwrite_fields = {
 
 Sometimes you may need the 'value' portion of your validation message to be replaced with a custom representation of the value. For example, consider the following rule that specifies that a credit card number is required if the payment_type has a value of cc:
 ```
+rules = {
+    "credit_card_number": "required_if:payment_type,cc"
+}
+```
+
+If this validation rule fails, it will produce the following error message:
+```
+The credit_card_number field is required if the payment_type field equals cc.
+```
+
+Instead of displaying cc as the payment type value, you may specify a custom value:
+```
 validator = Validator()
 validator.overwrite_values = {
-    "email": "e-mail address"
+    "cc": "credit card"
 }
+```
+
+Now if the validation rule fails it will produce the following message:
+```
+The credit_card_number field is required if the payment_type field equals credit card.
 ```
 
 ### Custom Rules
 To create a new rule, create a class that inherits from the Rule class. A rule is required to have the following specifications:
 - A rule should have a name attribute.
 - A rule should implement the passes() method which contains the logic that determines if a value passes the rule.
-- A rule should have the message property.
-```
+- A rule should have a message property.
+
+Here is an example of an uppercase rule:
+```python
 from spotlight.rules import Rule
 
 
@@ -413,7 +437,7 @@ class UppercaseRule(Rule):
 
     name = "uppercase"
 
-    def passes(self, field: str, value: Any, rule_values: str, data: dict) -> bool:
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self.message_fields = dict(field=field)
 
         return value.upper() == value
@@ -422,6 +446,16 @@ class UppercaseRule(Rule):
     def message(self) -> str:
         return "The {field} field must be uppercase."
 ```
+
+In addition to the name attribute, a rule has 2 additional attributes which are set to "False" by default: implicit & stop. These attributes may be overwritten. 
+
+**Implicit**
+
+Setting implicit to "True" will cause the field under validation to be validated against the rule even if the field is not present. This is useful for rules such as "required".
+
+**Stop**
+
+Setting stop to "True" causes the validator to stop validating the rest of the rules specified for the current field if the current rule fails. 
 
 ## Plugins
 ### Spotlight SQLAlchemy
