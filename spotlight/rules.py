@@ -39,16 +39,16 @@ class Rule(ABC):
     @abstractmethod
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         """
-        Tests if the field that is being validated passes this rule.
+        Tests if the field that is being validated passes the rule.
 
         Parameters
         ----------
         field : str
             The name of the field that is being validated.
         value : Any
-            The value of the field that is being validated
-        parameters : str
-            Rule parameters.
+            The value of the field that is being validated.
+        parameters : list
+            A list of rule parameters.
         validator : Validator
             Instance of the validator. Can be used to access data and rules.
             Useful for more advanced rules that are dependent on other fields.
