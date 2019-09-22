@@ -9,7 +9,7 @@ setuptools.setup(
     version="1.0.0",
     author="Michiel Doesburg",
     author_email="michiel@moddix.com",
-    description="Laravel style input validation for Python.",
+    description="Laravel style data validation for Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mdoesburg/spotlight",
