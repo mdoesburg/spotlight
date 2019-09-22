@@ -12,6 +12,7 @@ setuptools.setup(
     description="Laravel style data validation for Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    keywords="spotlight validation validate",
     url="https://github.com/mdoesburg/spotlight",
     project_urls=OrderedDict(
         (
