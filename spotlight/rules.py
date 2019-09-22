@@ -635,6 +635,9 @@ class DateTimeRule(Rule):
 
     @staticmethod
     def valid_date_time(value: Any, date_time_format: str = None) -> bool:
+        if isinstance(value, datetime):
+            return True
+
         value = str(value)
         if not date_time_format and not regex_match(DateTimeRule._regex, value):
             return False
