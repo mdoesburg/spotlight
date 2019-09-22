@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from spotlight import config
 from spotlight.errors import DATE_TIME_ERROR
 from spotlight.tests.validator_test import ValidatorTest
 
@@ -134,11 +137,35 @@ class DateTimeTest(ValidatorTest):
             "%": "%%",
             "1": "%u",
             "1985-08-23T3:00:00.000": "%Y-%m-%dT%H:%M:%S.%f",
+            "2019-05-17T19:59:19+0000": "%Y-%m-%dT%H:%M:%S%z",
         }
 
         for value, date_format in values.items():
             actual = self.validator.valid_date_time(value, date_format)
             self.assertEqual(actual, True)
+
+    def test_date_time_rule_with_date_time_objects_expect_no_errors(self):
+        dt1 = datetime.strptime("2019-05-16T20:59:19+0000", "%Y-%m-%dT%H:%M:%S%z")
+        dt2 = datetime.strptime("2019-05-17 19:59:19", config.DEFAULT_DATE_TIME_FORMAT)
+        dt3 = datetime.strptime("22/09/2020 18:59:19+0400", "%d/%m/%Y %H:%M:%S%z")
+
+        rules = {
+            "date_time1": "date_time",
+            "date_time2": "date_time",
+            "date_time3": "date_time",
+        }
+        data = {"date_time1": dt1, "date_time2": dt2, "date_time3": dt3}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_valid_date_time_with_format_with_date_time_object_expect_true(self):
+        dt = datetime.strptime("2019-05-17 19:59:19", config.DEFAULT_DATE_TIME_FORMAT)
+
+        actual = self.validator.valid_date_time(dt)
+        self.assertEqual(actual, True)
 
     def test_valid_date_time_with_format_with_invalid_values_expect_false(self):
         values = [
