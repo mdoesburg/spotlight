@@ -638,7 +638,6 @@ class DateTimeRule(Rule):
         if isinstance(value, datetime):
             return True
 
-        value = str(value)
         if not date_time_format and not regex_match(DateTimeRule._regex, value):
             return False
 
@@ -668,7 +667,6 @@ class BeforeRule(Rule):
     @staticmethod
     def date_and_format(field: str, field_or_date_time: Any, validator) -> Tuple[datetime, str]:
         after_format = DateTimeRule.default_format
-        field_or_date_time = str(field_or_date_time)
 
         # First try the value as a datetime string with the default format. If
         # it fails, try and find out if a datetime format has been specified in
@@ -679,7 +677,7 @@ class BeforeRule(Rule):
             after_format = BeforeRule.date_time_field_format(field_or_date_time, validator)
             value = validator.data.get(field_or_date_time)
             try:
-                after_date = datetime.strptime(str(value), after_format)
+                after_date = datetime.strptime(value, after_format)
             except (ValueError, TypeError):
                 after_format = BeforeRule.date_time_field_format(field, validator)
                 try:
