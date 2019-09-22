@@ -59,7 +59,36 @@ class Validator:
 
     @staticmethod
     def _default_rules() -> List[rls.Rule]:
-        return [rule() for rule in rls.Rule.subclasses]
+        return [
+            rls.AcceptedRule(),
+            rls.AfterRule(),
+            rls.AlphaNumRule(),
+            rls.AlphaNumSpaceRule(),
+            rls.BeforeRule(),
+            rls.BooleanRule(),
+            rls.DateTimeRule(),
+            rls.DictRule(),
+            rls.EmailRule(),
+            rls.FilledRule(),
+            rls.FloatRule(),
+            rls.InRule(),
+            rls.IntegerRule(),
+            rls.IpRule(),
+            rls.JsonRule(),
+            rls.ListRule(),
+            rls.MaxRule(),
+            rls.MinRule(),
+            rls.NotWithRule(),
+            rls.RequiredIfRule(),
+            rls.RequiredRule(),
+            rls.RequiredUnlessRule(),
+            rls.RequiredWithRule(),
+            rls.RequiredWithoutRule(),
+            rls.StartsWithRule(),
+            rls.StringRule(),
+            rls.UrlRule(),
+            rls.Uuid4Rule(),
+        ]
 
     def _setup_plugins(self, plugins: List[Plugin]):
         for plugin in plugins:
