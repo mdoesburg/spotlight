@@ -69,6 +69,7 @@ class Validator:
             rls.DateTimeRule(),
             rls.DictRule(),
             rls.EmailRule(),
+            rls.EndsWithRule(),
             rls.FilledRule(),
             rls.FloatRule(),
             rls.InRule(),

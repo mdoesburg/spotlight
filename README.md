@@ -139,6 +139,7 @@ Available methods:
 * [date_time](#date_time)
 * [dict](#dict)
 * [email](#email)
+* [ends_with](#ends_with)
 * [filled](#filled)
 * [float](#float)
 * [in](#in)
@@ -235,6 +236,12 @@ dict
 The field under validation must be a valid email address.
 ```
 email
+```
+
+### ends_with
+The field under validation must end with one of the given values.
+```
+ends_with:value,other,...
 ```
 
 ### filled

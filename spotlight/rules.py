@@ -747,3 +747,18 @@ class SizeRule(Rule):
     @property
     def message(self) -> str:
         return errors.SIZE_ERROR
+
+
+class EndsWithRule(Rule):
+    """The field under validation must end with one of the given values."""
+
+    name = "ends_with"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self.message_fields = dict(field=field, values=parameters)
+
+        return any([str(value).endswith(rule_val) for rule_val in parameters])
+
+    @property
+    def message(self) -> str:
+        return errors.ENDS_WITH_ERROR
