@@ -154,6 +154,7 @@ Available methods:
 * [required_unless](#required_unless)
 * [required_with](#required_without)
 * [required_without](#required_without)
+* [size](#size)
 * [starts_with](#starts_with)
 * [string](#string)
 * [url](#url)
@@ -327,6 +328,12 @@ required_with:field1,field2,...
 The field under validation must be present and not empty only when any of the other specified fields are not present.
 ```
 required_without:field1,field2,...
+```
+
+### size
+The field under validation must have a size matching the given value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
+```
+size:value
 ```
 
 ### starts_with

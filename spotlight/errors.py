@@ -26,6 +26,7 @@ REQUIRED_IF_ERROR = "The {field} field is required if the {other} field equals {
 REQUIRED_UNLESS_ERROR = "The {field} field is required unless the {other} field equals {value}."
 REQUIRED_WITH_ERROR = "The {field} field is required if any of the following fields are present: {other}."
 REQUIRED_WITHOUT_ERROR = "The {field} field is required if any of the following fields are absent: {other}."
+SIZE_ERROR = "The {field} field has to have a size of {size}."
 STARTS_WITH_ERROR = "The {field} field must start with one of the following values: {values}."
 STRING_ERROR = "The {field} field must be a string."
 URL_ERROR = "The {field} field has to be a valid URL."

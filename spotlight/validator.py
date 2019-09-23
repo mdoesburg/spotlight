@@ -84,6 +84,7 @@ class Validator:
             rls.RequiredUnlessRule(),
             rls.RequiredWithRule(),
             rls.RequiredWithoutRule(),
+            rls.SizeRule(),
             rls.StartsWithRule(),
             rls.StringRule(),
             rls.UrlRule(),

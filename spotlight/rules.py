@@ -721,3 +721,29 @@ class AfterRule(Rule):
     @property
     def message(self) -> str:
         return errors.AFTER_ERROR
+
+
+class SizeRule(Rule):
+    """Size"""
+
+    name = "size"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        size = parameters[0]
+        self.message_fields = dict(field=field, size=size)
+        expected = float(size)
+
+        if isinstance(value, str):
+            return len(value) == expected
+        elif isinstance(value, list) or isinstance(value, dict):
+            return len(value) == expected
+        elif isinstance(value, int):
+            return value == expected
+        elif isinstance(value, float):
+            return value == expected
+
+        return False
+
+    @property
+    def message(self) -> str:
+        return errors.SIZE_ERROR
