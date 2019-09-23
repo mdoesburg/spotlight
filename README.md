@@ -9,14 +9,13 @@ Laravel style data validation for Python.
   * [Direct Validation](#direct-validation)
 * [Available Rules](#available-rules)
 * [Advanced Usage](#advanced-usage)
-  * [Overwriting Messages](#overwriting-messages)
+  * [Custom Error Messages](#custom-error-messages)
   * [Custom Rules](#custom-rules)
 * [Plugins](#plugins)
   * [Spotlight SQLAlchemy](#spotlight-sqlalchemy)
 
 ## Installation
 Spotlight can be installed via pip:
-
 ```
 pip install spotlight
 ```
@@ -280,13 +279,13 @@ list
 ```
 
 ### max
-The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For a list, value corresponds to the length of the list.
+The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
 ```
 max:value
 ```
 
 ### min
-The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For a list, value corresponds to the length of the list.
+The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
 ```
 min:value
 ```
