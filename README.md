@@ -52,12 +52,10 @@ Nested validation:
 ```python
 rules = {
     "token": "required|string",
-    "person": {
-        "first_name": "required|string|max:255",
-        "last_name": "required|string|max:255",
-        "email": "required|email",
-        "password": "required|min:8|max:255"
-    }
+    "person.first_name": "required|string|max:255",
+    "person.last_name": "required|string|max:255",
+    "person.email": "required|email",
+    "person.password": "required|min:8|max:255"
 }
 
 data = {
