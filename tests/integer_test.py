@@ -1,4 +1,4 @@
-from spotlight.errors import INTEGER_ERROR
+from src.spotlight.errors import INTEGER_ERROR
 from .validator_test import ValidatorTest
 
 

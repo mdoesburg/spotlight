@@ -1,4 +1,4 @@
-from spotlight.errors import MAX_STRING_ERROR, MAX_ERROR, MAX_ITEMS_ERROR
+from src.spotlight.errors import MAX_STRING_ERROR, MAX_ERROR, MAX_ITEMS_ERROR
 from .validator_test import ValidatorTest
 
 

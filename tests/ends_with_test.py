@@ -1,4 +1,4 @@
-from spotlight.errors import ENDS_WITH_ERROR
+from src.spotlight.errors import ENDS_WITH_ERROR
 from .validator_test import ValidatorTest
 
 

@@ -1,4 +1,4 @@
-from spotlight.errors import MIN_STRING_ERROR, MIN_ERROR, MIN_ITEMS_ERROR
+from src.spotlight.errors import MIN_STRING_ERROR, MIN_ERROR, MIN_ITEMS_ERROR
 from .validator_test import ValidatorTest
 
 

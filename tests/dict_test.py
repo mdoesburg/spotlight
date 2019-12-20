@@ -1,4 +1,4 @@
-from spotlight.errors import DICT_ERROR, REQUIRED_ERROR
+from src.spotlight.errors import DICT_ERROR, REQUIRED_ERROR
 from .validator_test import ValidatorTest
 
 

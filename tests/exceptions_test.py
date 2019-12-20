@@ -2,14 +2,14 @@ from typing import Any, List
 
 import pytest
 
-from spotlight.exceptions import (
+from src.spotlight.exceptions import (
     AttributeNotImplementedError,
     RuleNameAlreadyExistsError,
     InvalidDataError,
     InvalidRulesError,
     RuleNotFoundError,
 )
-from spotlight.rules import Rule
+from src.spotlight.rules import Rule
 from .validator_test import ValidatorTest
 
 

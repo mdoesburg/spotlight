@@ -1,6 +1,6 @@
 from uuid import uuid4, UUID
 
-from spotlight.errors import UUID4_ERROR
+from src.spotlight.errors import UUID4_ERROR
 from .validator_test import ValidatorTest
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from spotlight import config
-from spotlight.errors import DATE_TIME_ERROR
+from src.spotlight import config
+from src.spotlight.errors import DATE_TIME_ERROR
 from .validator_test import ValidatorTest
 
 

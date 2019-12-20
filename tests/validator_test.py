@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 
-from spotlight.validator import Validator
+from src.spotlight.validator import Validator
 
 
 class ValidatorTest(unittest.TestCase):

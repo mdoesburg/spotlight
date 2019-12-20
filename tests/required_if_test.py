@@ -1,4 +1,4 @@
-from spotlight.errors import REQUIRED_IF_ERROR
+from src.spotlight.errors import REQUIRED_IF_ERROR
 from .validator_test import ValidatorTest
 
 

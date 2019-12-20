@@ -1,4 +1,4 @@
-from spotlight.errors import (
+from src.spotlight.errors import (
     MAX_STRING_ERROR,
     MIN_STRING_ERROR,
     IN_ERROR,

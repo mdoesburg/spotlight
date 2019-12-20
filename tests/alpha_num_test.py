@@ -1,4 +1,4 @@
-from spotlight.errors import ALPHA_NUM_ERROR
+from src.spotlight.errors import ALPHA_NUM_ERROR
 from .validator_test import ValidatorTest
 
 

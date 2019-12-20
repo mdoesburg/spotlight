@@ -1,6 +1,6 @@
 import json
 
-from spotlight.errors import JSON_ERROR
+from src.spotlight.errors import JSON_ERROR
 from .validator_test import ValidatorTest
 
 

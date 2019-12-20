@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from spotlight.rules import Rule
+from src.spotlight.rules import Rule
 from .validator_test import ValidatorTest
 
 

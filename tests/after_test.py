@@ -1,7 +1,7 @@
 import pytest
 
-from spotlight.errors import AFTER_ERROR
-from spotlight.exceptions import InvalidDateTimeFormat
+from src.spotlight.errors import AFTER_ERROR
+from src.spotlight.exceptions import InvalidDateTimeFormat
 from .validator_test import ValidatorTest
 
 

@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="spotlight",
-    version="1.0.6",
+    version="1.0.7",
     author="Michiel Doesburg",
     author_email="michiel@moddix.com",
     description="Laravel style data validation for Python.",

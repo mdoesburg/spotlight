@@ -1,4 +1,4 @@
-from spotlight.errors import LIST_ERROR, REQUIRED_ERROR
+from src.spotlight.errors import LIST_ERROR, REQUIRED_ERROR
 from .validator_test import ValidatorTest
 
 
