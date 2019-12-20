@@ -2,13 +2,9 @@ import re
 from string import Formatter
 from typing import Union, List, overload, Tuple, Iterator, Dict, Any
 
-from src.spotlight import rules as rls, config
-from src.spotlight.exceptions import (
-    RuleNotFoundError,
-    InvalidDataError,
-    InvalidRulesError,
-)
-from src.spotlight.utils import get_field_value
+from . import rules as rls, config
+from .exceptions import RuleNotFoundError, InvalidDataError, InvalidRulesError
+from .utils import get_field_value
 
 
 class Validator:

@@ -7,13 +7,13 @@ from typing import Any, Tuple, List
 from uuid import UUID
 from abc import ABC, abstractmethod
 
-from src.spotlight import errors, config
-from src.spotlight.exceptions import (
+from . import errors, config
+from .exceptions import (
     RuleNameAlreadyExistsError,
     AttributeNotImplementedError,
     InvalidDateTimeFormat,
 )
-from src.spotlight.utils import missing, equal, empty, regex_match
+from .utils import missing, equal, empty, regex_match
 
 
 class Rule(ABC):

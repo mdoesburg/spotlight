@@ -1,7 +1,7 @@
 from typing import Pattern, AnyStr, Any
 
-from src.spotlight import config
-from src.spotlight.exceptions import FieldValueNotFoundError
+from . import config
+from .exceptions import FieldValueNotFoundError
 
 
 def regex_match(compiled_regex: Pattern[AnyStr], value: Any) -> bool:
