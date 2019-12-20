@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+# Remove old dist files
+rm -r dist/*
+
+# Build package
+python setup.py sdist bdist_wheel
+
+# Clean up files
+rm -r build src/spotlight.egg-info
