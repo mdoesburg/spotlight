@@ -5,7 +5,7 @@ find . -name '*.pyc' -delete
 rm -rf .pytest_cache .tmontmp .testmondata
 
 TEST_CMD="python -B -m pytest"
-TEST_PATH="spotlight/tests"
+TEST_PATH="tests"
 COVERAGE_FLAG="--cov=spotlight"
 
 if [[ $1 = "-c" ]] || [[ $1 = "--cov" ]]; then
