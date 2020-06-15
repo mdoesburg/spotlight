@@ -372,7 +372,7 @@ If needed, you can specify custom error messages to overwrite the default error 
 **Messages**
 
 You can overwrite all messages for a specific rule. In the example below we are overwriting all 'required' error messages:
-```
+```python
 validator = Validator()
 validator.overwrite_messages = {
     "required": "Hey! This is a required field!"
@@ -380,7 +380,7 @@ validator.overwrite_messages = {
 ```
 
 You can overwrite all messages for a specific field. In the example below we are overwriting all the error messages for the 'first_name' field:
-```
+```python
 validator = Validator()
 validator.overwrite_messages = {
     "first_name": "Hey! This field contains an error!"
@@ -388,7 +388,7 @@ validator.overwrite_messages = {
 ```
 
 You can overwrite an error message for a specific rule of a specific field. In the example below we are overwriting the 'first_name.required' error message:
-```
+```python
 validator = Validator()
 validator.overwrite_messages = {
     "first_name.required": "Hey! This is a required field!"
@@ -398,7 +398,7 @@ validator.overwrite_messages = {
 **Fields**
 
 If you would like the 'field' portion of your validation message to be replaced with a custom field name, you may do so like this:
-```
+```python
 validator = Validator()
 validator.overwrite_fields = {
     "email": "e-mail address"
@@ -408,7 +408,7 @@ validator.overwrite_fields = {
 **Values**
 
 Sometimes you may need the 'value' portion of your validation message to be replaced with a custom representation of the value. For example, consider the following rule that specifies that a credit card number is required if the payment_type has a value of cc:
-```
+```python
 rules = {
     "credit_card_number": "required_if:payment_type,cc"
 }
@@ -420,7 +420,7 @@ The credit_card_number field is required if the payment_type field equals cc.
 ```
 
 Instead of displaying cc as the payment type value, you may specify a custom value:
-```
+```python
 validator = Validator()
 validator.overwrite_values = {
     "cc": "credit card"
@@ -474,7 +474,7 @@ validator.register_rule(UppercaseRule())
 ```
 
 After registering the rule, it can be used:
-```
+```python
 rules = {
     "test": "uppercase"
 }
@@ -497,14 +497,14 @@ Setting stop to "True" causes the validator to stop validating the rest of the r
 **Message Fields**
 
 If a rule contains a message property that contains keyword arguments (words surrounded by curly braces) like the one in the example below, the "message_fields" variable needs to be set in the passes method.
-```
+```python
 @property
 def message(self) -> str:
     return "The {field} field must be uppercase."
 ```
 
 The "message_fields" variable can be set as shown in the example below. The keyword arguments in the message property will be replaced with the values from the "message_fields" dictionary.
-```
+```python
 def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
     self.message_fields = dict(field=field)
 ```
