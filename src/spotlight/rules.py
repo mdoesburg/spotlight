@@ -680,14 +680,18 @@ class BeforeRule(Rule):
                 field_or_date_time, validator
             )
             value = validator.data.get(field_or_date_time)
-            try:
-                after_date = datetime.strptime(value, after_format)
-            except (ValueError, TypeError):
-                after_format = BeforeRule.date_time_field_format(field, validator)
+
+            if isinstance(value, datetime):
+                after_date = value
+            else:
                 try:
-                    after_date = datetime.strptime(field_or_date_time, after_format)
+                    after_date = datetime.strptime(value, after_format)
                 except (ValueError, TypeError):
-                    raise InvalidDateTimeFormat
+                    after_format = BeforeRule.date_time_field_format(field, validator)
+                    try:
+                        after_date = datetime.strptime(field_or_date_time, after_format)
+                    except (ValueError, TypeError):
+                        raise InvalidDateTimeFormat
 
         return after_date, after_format
 

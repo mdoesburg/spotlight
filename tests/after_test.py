@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from src.spotlight.errors import AFTER_ERROR
@@ -104,3 +106,25 @@ class AfterTest(ValidatorTest):
 
         with pytest.raises(InvalidDateTimeFormat):
             self.validator.validate(data, rules)
+
+    def test_after_rule_with_python_datetime_objects_value_expect_no_error(self):
+        time = datetime.utcnow()
+        rules = {"start_time": "date_time", "end_time": "date_time|after:start_time"}
+        data = {"start_time": time, "end_time": time + timedelta(days=1)}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_after_rule_with_python_datetime_object_and_invalid_time_value_expect_error(self):
+        time = datetime.utcnow()
+        field = "end_time"
+        rules = {"start_time": "date_time", "end_time": "date_time|after:start_time"}
+        data = {"start_time": time, "end_time": time}
+        expected = AFTER_ERROR.format(field=field, other="start_time")
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(field)
+
+        self.assertEqual(errs[0], expected)
