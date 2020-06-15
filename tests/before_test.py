@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from src.spotlight.errors import BEFORE_ERROR
@@ -126,3 +128,25 @@ class BeforeTest(ValidatorTest):
 
         with pytest.raises(InvalidDateTimeFormat):
             self.validator.validate(data, rules)
+
+    def test_before_rule_with_python_datetime_objects_value_expect_no_error(self):
+        time = datetime.utcnow()
+        rules = {"start_time": "date_time|before:end_time", "end_time": "date_time"}
+        data = {"start_time": time, "end_time": time + timedelta(days=1)}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_rule_with_python_datetime_object_and_invalid_time_value_expect_error(self):
+        time = datetime.utcnow()
+        field = "start_time"
+        rules = {"start_time": "date_time|before:end_time", "end_time": "date_time"}
+        data = {"start_time": time, "end_time": time}
+        expected = BEFORE_ERROR.format(field=field, other="end_time")
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(field)
+
+        self.assertEqual(errs[0], expected)
