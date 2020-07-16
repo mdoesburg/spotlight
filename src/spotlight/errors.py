@@ -5,6 +5,7 @@ ALPHA_NUM_SPACE_ERROR = "The {field} field can only contain letters, numbers and
 BEFORE_ERROR = "The {field} field must be a date/time before {other}."
 BOOLEAN_ERROR = "The {field} field must be a boolean."
 DATE_TIME_ERROR = "The {field} field has to be a valid date/time matching the {format} format."
+DECIMAL_ERROR = "The {field} field must be a decimal."
 DICT_ERROR = "The {field} field must be a dict."
 EMAIL_ERROR = "The {field} field has to be a valid email address."
 ENDS_WITH_ERROR = "The {field} field must end with one of the following values: {values}."
