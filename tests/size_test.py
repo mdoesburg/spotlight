@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from src.spotlight.errors import SIZE_ERROR
 from .validator_test import ValidatorTest
 
@@ -115,6 +117,25 @@ class SizeTest(ValidatorTest):
     def test_size_rule_with_int_value_and_float_rule_expect_error(self):
         rules = {"test": "size:1.1"}
         data = {"test": 1}
+        expected = SIZE_ERROR.format(field=self.field, size=1.1)
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)
+
+    def test_size_rule_with_decimal_value_with_valid_size_expect_no_error(self):
+        rules = {"test": "size:5.2"}
+        data = {"test": Decimal("5.2")}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_size_rule_with_decimal_value_with_invalid_size_expect_error(self):
+        rules = {"test": "size:1.1"}
+        data = {"test": Decimal("1.2")}
         expected = SIZE_ERROR.format(field=self.field, size=1.1)
 
         errors = self.validator.validate(data, rules)

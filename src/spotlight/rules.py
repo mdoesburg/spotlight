@@ -775,6 +775,9 @@ class SizeRule(Rule):
             return value == expected
         elif isinstance(value, float):
             return value == expected
+        elif isinstance(value, Decimal):
+            expected = Decimal(size)
+            return value == expected
 
         return False
 
