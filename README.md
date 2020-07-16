@@ -116,6 +116,7 @@ Available methods:
 * valid_alpha_num_space
 * valid_boolean
 * valid_date_time
+* valid_decimal
 * valid_dict
 * valid_email
 * valid_float
@@ -135,6 +136,7 @@ Available methods:
 * [before](#before)
 * [boolean](#boolean)
 * [date_time](#date_time)
+* [decimal](#decimal)
 * [dict](#dict)
 * [email](#email)
 * [ends_with](#ends_with)
@@ -224,6 +226,12 @@ date_time
 date_time:format
 ```
 
+### decimal
+The field under validation must be a decimal.
+```
+decimal
+```
+
 ### dict
 The field under validation must be a dict.
 ```
@@ -285,13 +293,13 @@ list
 ```
 
 ### max
-The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
+The field under validation must be less than or equal to the given maximum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For decimals, value corresponds to a given decimal value. For lists and dicts, value corresponds to the length of the list/dict.
 ```
 max:value
 ```
 
 ### min
-The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
+The field under validation must be greater than or equal to the given minimum value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For decimals, value corresponds to a given decimal value. For lists and dicts, value corresponds to the length of the list/dict.
 ```
 min:value
 ```
@@ -336,7 +344,7 @@ required_without:field1,field2,...
 ```
 
 ### size
-The field under validation must have a size matching the given value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For lists and dicts, value corresponds to the length of the list.
+The field under validation must have a size matching the given value. For strings, value corresponds to the number of characters. For integers, value corresponds to a given integer value. For floats, value corresponds to a given float value. For decimals, value corresponds to a given decimal value. For lists and dicts, value corresponds to the length of the list/dict.
 ```
 size:value
 ```
