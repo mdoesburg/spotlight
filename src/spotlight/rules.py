@@ -353,6 +353,9 @@ class MaxRule(Rule):
             return value <= expected
         elif isinstance(value, float):
             return value <= expected
+        elif isinstance(value, Decimal):
+            expected = Decimal(max_)
+            return value <= expected
 
         return False
 
