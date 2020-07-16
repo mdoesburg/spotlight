@@ -2,6 +2,7 @@ import ipaddress
 import json
 import re
 from datetime import datetime
+from decimal import Decimal
 from json import JSONDecodeError
 from typing import Any, Tuple, List
 from uuid import UUID
@@ -316,6 +317,9 @@ class MinRule(Rule):
             return value >= expected
         elif isinstance(value, float):
             return value >= expected
+        elif isinstance(value, Decimal):
+            expected = Decimal(min_)
+            return value >= expected
 
         return False
 
@@ -348,6 +352,9 @@ class MaxRule(Rule):
         elif isinstance(value, int):
             return value <= expected
         elif isinstance(value, float):
+            return value <= expected
+        elif isinstance(value, Decimal):
+            expected = Decimal(max_)
             return value <= expected
 
         return False
@@ -470,6 +477,25 @@ class FloatRule(Rule):
     @staticmethod
     def valid_float(float_) -> bool:
         return type(float_) is float
+
+
+class DecimalRule(Rule):
+    """Valid decimal"""
+
+    name = "decimal"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self.message_fields = dict(field=field)
+
+        return self.valid_decimal(value)
+
+    @property
+    def message(self) -> str:
+        return errors.DECIMAL_ERROR
+
+    @staticmethod
+    def valid_decimal(value) -> bool:
+        return isinstance(value, Decimal)
 
 
 class BooleanRule(Rule):

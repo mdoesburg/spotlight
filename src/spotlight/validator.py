@@ -67,6 +67,7 @@ class Validator:
             rls.BeforeRule(),
             rls.BooleanRule(),
             rls.DateTimeRule(),
+            rls.DecimalRule(),
             rls.DictRule(),
             rls.EmailRule(),
             rls.EndsWithRule(),
@@ -391,6 +392,10 @@ class Validator:
     @staticmethod
     def valid_float(value: Any) -> bool:
         return rls.FloatRule.valid_float(value)
+
+    @staticmethod
+    def valid_decimal(value: Any) -> bool:
+        return rls.DecimalRule.valid_decimal(value)
 
     @staticmethod
     def valid_boolean(value: Any) -> bool:
