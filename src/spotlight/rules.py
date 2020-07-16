@@ -317,6 +317,9 @@ class MinRule(Rule):
             return value >= expected
         elif isinstance(value, float):
             return value >= expected
+        elif isinstance(value, Decimal):
+            expected = Decimal(min_)
+            return value >= expected
 
         return False
 
