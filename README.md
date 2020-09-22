@@ -150,6 +150,7 @@ Available methods:
 * [max](#max)
 * [min](#min)
 * [not_with](#not_with)
+* [regex](#regex)
 * [required](#required)
 * [required_if](#required_if)
 * [required_unless](#required_unless)
@@ -308,6 +309,21 @@ min:value
 The field under validation can't be present if the other specified field is present.
 ```
 not_with:other
+```
+
+
+### regex
+
+The field under validation must match the given regular expression. Internally, this rule uses the Python re.fullmatch() function.
+```
+regex:pattern
+```
+
+Note: When using the regex rule, it may be necessary to specify rules in a list instead of using pipe delimiters, especially if the regular expression contains a pipe character, like so:
+```python
+rules = {
+    "some_field": ["required", "regex:a|b"]
+}
 ```
 
 ### required

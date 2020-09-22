@@ -81,6 +81,7 @@ class Validator:
             rls.MaxRule(),
             rls.MinRule(),
             rls.NotWithRule(),
+            rls.RegexRule(),
             rls.RequiredIfRule(),
             rls.RequiredRule(),
             rls.RequiredUnlessRule(),
@@ -200,7 +201,10 @@ class Validator:
 
     def _field_iterator(self) -> Iterator[Tuple[str, List[str]]]:
         for field, rules in self.rules.items():
-            yield field, self._split_rules(rules)
+            if isinstance(rules, list):
+                yield field, rules
+            else:
+                yield field, self._split_rules(rules)
 
     def rule_iterator(self, rules) -> Iterator[Tuple[str, List[str]]]:
         for rule in rules:

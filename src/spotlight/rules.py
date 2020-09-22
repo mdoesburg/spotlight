@@ -799,3 +799,20 @@ class EndsWithRule(Rule):
     @property
     def message(self) -> str:
         return errors.ENDS_WITH_ERROR
+
+
+class RegexRule(Rule):
+    """The field under validation must match the regex."""
+
+    name = "regex"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        regex = parameters[0]
+        self.message_fields = dict(field=field, regex=regex)
+        regex = re.compile(regex)
+
+        return regex_match(regex, value)
+
+    @property
+    def message(self) -> str:
+        return errors.REGEX_ERROR
