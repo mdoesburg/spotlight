@@ -233,7 +233,7 @@ class Validator:
                 raise InvalidDataError(type(self.data))
 
     def _validate_rules_type(self):
-        if type(self.rules) is not dict:
+        if not isinstance(self.rules, dict):
             raise InvalidRulesError(type(self.rules))
 
     def _rule_exists(self, rule_name: str) -> bool:

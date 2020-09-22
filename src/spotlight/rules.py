@@ -438,7 +438,7 @@ class StringRule(Rule):
 
     @staticmethod
     def valid_string(string) -> bool:
-        return type(string) is str
+        return isinstance(string, str)
 
 
 class IntegerRule(Rule):
@@ -457,7 +457,7 @@ class IntegerRule(Rule):
 
     @staticmethod
     def valid_integer(integer) -> bool:
-        return type(integer) is int
+        return isinstance(integer, int)
 
 
 class FloatRule(Rule):
@@ -476,7 +476,7 @@ class FloatRule(Rule):
 
     @staticmethod
     def valid_float(float_) -> bool:
-        return type(float_) is float
+        return isinstance(float_, float)
 
 
 class DecimalRule(Rule):
@@ -514,7 +514,7 @@ class BooleanRule(Rule):
 
     @staticmethod
     def valid_boolean(boolean) -> bool:
-        return type(boolean) is bool
+        return isinstance(boolean, bool)
 
 
 class ListRule(Rule):
@@ -534,7 +534,7 @@ class ListRule(Rule):
 
     @staticmethod
     def valid_list(value) -> bool:
-        return type(value) is list
+        return isinstance(value, list)
 
 
 class Uuid4Rule(Rule):
@@ -553,7 +553,7 @@ class Uuid4Rule(Rule):
 
     @staticmethod
     def valid_uuid4(uuid) -> bool:
-        if type(uuid) is UUID:
+        if isinstance(uuid, UUID):
             uuid = str(uuid)
         try:
             val = UUID(uuid, version=4)
@@ -633,7 +633,7 @@ class DictRule(Rule):
 
     @staticmethod
     def valid_dict(value) -> bool:
-        return type(value) is dict
+        return isinstance(value, dict)
 
 
 class DateTimeRule(Rule):

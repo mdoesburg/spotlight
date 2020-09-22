@@ -275,6 +275,9 @@ The field under validation must be an integer.
 integer
 ```
 
+Note: Since version 2.0, True and False are considered valid integers, because bool is an instance of int in Python.
+
+
 ### ip
 The field under validation must be an IP address.
 ```

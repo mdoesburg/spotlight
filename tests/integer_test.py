@@ -28,14 +28,14 @@ class IntegerTest(ValidatorTest):
         self.assertEqual(errs, expected)
 
     def test_valid_integers_with_invalid_values_expect_false(self):
-        invalid_integers = ["0", "1", -1.0, 1.4, [], {}, True, False, "test"]
+        invalid_integers = ["0", "1", -1.0, 1.4, [], {}, "test"]
 
         for invalid_integer in invalid_integers:
             actual = self.validator.valid_integer(invalid_integer)
             self.assertEqual(actual, False)
 
     def test_valid_integers_with_valid_values_expect_true(self):
-        valid_integers = [-1, 0, 1, 5, 10]
+        valid_integers = [-1, 0, 1, 5, 10, True, False]
 
         for valid_integer in valid_integers:
             actual = self.validator.valid_integer(valid_integer)

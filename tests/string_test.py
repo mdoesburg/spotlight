@@ -2,6 +2,11 @@ from src.spotlight.errors import STRING_ERROR
 from .validator_test import ValidatorTest
 
 
+class CustomString(str):
+    def __new__(cls, *args, **kwargs):
+        return str.__new__(cls, *args, **kwargs)
+
+
 class StringTest(ValidatorTest):
     def setUp(self):
         self.field = "test"
@@ -35,7 +40,7 @@ class StringTest(ValidatorTest):
             self.assertEqual(actual, False)
 
     def test_valid_string_with_valid_values_expect_true(self):
-        valid_strings = ["", "hello", "world", "0", "1", "!"]
+        valid_strings = ["", "hello", "world", "0", "1", "!", CustomString("test")]
 
         for valid_string in valid_strings:
             actual = self.validator.valid_string(valid_string)

@@ -35,10 +35,10 @@ class IpTest(ValidatorTest):
         for field, errs in errors.items():
             self.assertEqual(errs, expected)
 
-    def test_valid_ip_with_boolean_true_expect_false(self):
+    def test_valid_ip_with_boolean_true_expect_true(self):
         valid_ip = self.validator.valid_ip(True)
 
-        self.assertEqual(valid_ip, False)
+        self.assertEqual(valid_ip, True)
 
     def test_valid_ip_with_integer_expect_true(self):
         # String value:  192.168.1.1
