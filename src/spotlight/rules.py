@@ -730,8 +730,8 @@ class BeforeRule(Rule):
         date_time_format = None
         if field in validator.rules:
             rules = validator.field_rules(field)
-            for name, parameters in validator.rule_iterator(rules):
-                if name == DateTimeRule.name and parameters:
+            for rule, parameters in validator.rule_iterator(rules):
+                if rule.name == DateTimeRule.name and parameters:
                     date_time_format = parameters[0]
 
         return date_time_format or DateTimeRule.default_format
