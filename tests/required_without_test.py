@@ -41,3 +41,17 @@ class RequiredWithoutTest(ValidatorTest):
         errs = errors.get(field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_required_without_rule_with_both_fields_present_but_none_expect_error(self):
+        field = "test2"
+        rules = {
+            "test1": "required_without:test2|string",
+            "test2": "required_without:test1|string",
+        }
+        data = {"test1": None, "test2": None}
+        expected = REQUIRED_WITHOUT_ERROR.format(field=field, other="test1")
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(field)
+
+        self.assertEqual(errs[0], expected)

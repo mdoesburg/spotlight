@@ -106,3 +106,16 @@ class RequiredIfTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_required_if_rule_with_field_present_but_none_expect_error(self):
+        field = "test2"
+        rules = {"test1": "string", "test2": "required_if:test1,some_value"}
+        data = {"test1": "some_value", "test2": None}
+        expected = REQUIRED_IF_ERROR.format(
+            field=field, other="test1", value="some_value"
+        )
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(field)
+
+        self.assertEqual(errs[0], expected)

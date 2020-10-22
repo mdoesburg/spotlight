@@ -71,3 +71,9 @@ def empty(value) -> bool:
             return True
 
     return False
+
+
+def missing_or_empty(data, field) -> bool:
+    value = get_field_value(data, field)
+
+    return missing(data, field) or empty(value)

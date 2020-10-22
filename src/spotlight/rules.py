@@ -14,7 +14,7 @@ from .exceptions import (
     AttributeNotImplementedError,
     InvalidDateTimeFormat,
 )
-from .utils import missing, equal, empty, regex_match
+from .utils import missing, equal, empty, regex_match, get_field_value, missing_or_empty
 
 
 class Rule(ABC):
@@ -97,7 +97,9 @@ class RequiredWithoutRule(Rule):
         data = validator.data
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
-        if missing(data, field) and any(missing(data, o) for o in other_fields):
+        if missing_or_empty(data, field) and any(
+            missing_or_empty(data, o) for o in other_fields
+        ):
             return False
 
         return True
@@ -119,7 +121,9 @@ class RequiredWithRule(Rule):
         data = validator.data
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
-        if missing(data, field) and any(not missing(data, o) for o in other_fields):
+        if missing_or_empty(data, field) and any(
+            not missing_or_empty(data, o) for o in other_fields
+        ):
             return False
 
         return True
@@ -142,7 +146,7 @@ class RequiredIfRule(Rule):
         other_val = data.get(other)
         self.message_fields = dict(field=field, other=other, value=val)
 
-        if missing(data, field) and equal(val, other_val):
+        if missing_or_empty(data, field) and equal(val, other_val):
             return False
 
         return True
@@ -165,7 +169,7 @@ class RequiredUnlessRule(Rule):
         other_val = data.get(other)
         self.message_fields = dict(field=field, other=other, value=val)
 
-        if missing(data, field) and not equal(val, other_val):
+        if missing_or_empty(data, field) and not equal(val, other_val):
             return False
 
         return True
