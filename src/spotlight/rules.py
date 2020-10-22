@@ -820,3 +820,25 @@ class RegexRule(Rule):
     @property
     def message(self) -> str:
         return errors.REGEX_ERROR
+
+
+class _FunctionRule(Rule):
+    """The field under validation must pass the supplied function."""
+
+    def __init__(self, validation_function):
+        super().__init__()
+        self._result = None
+        self.validation_function = validation_function
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self._result = self.validation_function(value, validator)
+        self.message_fields = dict(field=field)
+        return self._result is None
+
+    @property
+    def message(self) -> str:
+        return self._result
+
+    @property
+    def name(self):
+        return self.__class__.__name__
