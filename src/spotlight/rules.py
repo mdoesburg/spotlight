@@ -835,6 +835,7 @@ class _FunctionRule(Rule):
             field=field, value=value, validator=validator
         )
         self.message_fields = dict(field=field)
+
         return self._result is None
 
     @property
