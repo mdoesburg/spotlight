@@ -730,8 +730,8 @@ class BeforeRule(Rule):
         date_time_format = None
         if field in validator.rules:
             rules = validator.field_rules(field)
-            for name, parameters in validator.rule_iterator(rules):
-                if name == DateTimeRule.name and parameters:
+            for rule, parameters in validator.rule_iterator(rules):
+                if rule.name == DateTimeRule.name and parameters:
                     date_time_format = parameters[0]
 
         return date_time_format or DateTimeRule.default_format
@@ -820,3 +820,27 @@ class RegexRule(Rule):
     @property
     def message(self) -> str:
         return errors.REGEX_ERROR
+
+
+class _FunctionRule(Rule):
+    """The field under validation must pass the supplied function."""
+
+    def __init__(self, validation_function):
+        super().__init__()
+        self._result = None
+        self.validation_function = validation_function
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self._result = self.validation_function(
+            field=field, value=value, validator=validator
+        )
+        self.message_fields = dict(field=field)
+        return self._result is None
+
+    @property
+    def message(self) -> str:
+        return self._result
+
+    @property
+    def name(self):
+        return self.__class__.__name__

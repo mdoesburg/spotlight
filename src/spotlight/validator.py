@@ -1,6 +1,6 @@
 import re
 from string import Formatter
-from typing import Union, List, overload, Tuple, Iterator, Dict, Any
+from typing import Union, List, overload, Tuple, Iterator, Dict, Any, Callable
 
 from . import rules as rls, config
 from .exceptions import RuleNotFoundError, InvalidDataError, InvalidRulesError
@@ -36,7 +36,6 @@ class Validator:
         self.overwrite_fields = {}
         self.overwrite_values = {}
 
-        self._implicit_rules: List[str] = []
         self._available_rules: Dict[str, rls.Rule] = {}
 
         self._setup_default_rules()
@@ -54,8 +53,6 @@ class Validator:
 
     def _setup_rule(self, rule):
         self._available_rules[rule.name] = rule
-        if rule.implicit:
-            self._implicit_rules.append(rule.name)
 
     @staticmethod
     def _default_rules() -> List[rls.Rule]:
@@ -107,18 +104,21 @@ class Validator:
 
     @overload
     def validate(
-        self, data: dict, rules: dict, flat: bool = False
+        self, data: dict, rules: Dict[str, Union[str, list]], flat: bool = False
     ) -> Union[dict, list]:
         ...
 
     @overload
     def validate(
-        self, data: object, rules: dict, flat: bool = False
+        self, data: object, rules: Dict[str, Union[str, list]], flat: bool = False
     ) -> Union[dict, list]:
         ...
 
     def validate(
-        self, data: Union[dict, object], rules: dict, flat: bool = False
+        self,
+        data: Union[dict, object],
+        rules: Dict[str, Union[str, list]],
+        flat: bool = False,
     ) -> Union[dict, list]:
         """
         Validate data with given rules.
@@ -181,20 +181,13 @@ class Validator:
             # Iterate over sub fields
             for field in self._sub_fields(raw_field):
                 # Iterate over rules
-                for rule_name, rule_parameters in self.rule_iterator(rules):
-                    # Check if rule exists
-                    if not self._rule_exists(rule_name):
-                        raise RuleNotFoundError(rule_name)
-
+                for rule, rule_parameters in self.rule_iterator(rules):
                     # Check if field is validatable
-                    if self._is_validatable(field, rule_name):
-                        rule = self._available_rules.get(rule_name)
+                    if self._is_validatable(field, rule):
                         value = self._get_field_value(field)
-
                         # If rule didn't pass, add error
                         if not rule.passes(field, value, rule_parameters, self):
                             self._add_error(rule)
-
                             # Stop
                             if rule.stop:
                                 break
@@ -206,9 +199,20 @@ class Validator:
             else:
                 yield field, self._split_rules(rules)
 
-    def rule_iterator(self, rules) -> Iterator[Tuple[str, List[str]]]:
+    def rule_iterator(self, rules) -> Iterator[Tuple[rls.Rule, List[str]]]:
         for rule in rules:
-            yield self._rule_name(rule), self._rule_parameters(rule)
+            if isinstance(rule, Callable):
+                yield rls._FunctionRule(rule), []
+                continue
+
+            rule_name = self._rule_name(rule)
+            rule_parameters = self._rule_parameters(rule)
+
+            if not self._rule_exists(rule_name):
+                raise RuleNotFoundError(rule_name)
+
+            rule = self._available_rules.get(rule_name)
+            yield rule, rule_parameters
 
     def _split_rules(self, rules: str) -> List[str]:
         return rules.split(self.config.RULE_DELIMITER)
@@ -242,14 +246,11 @@ class Validator:
     def _contains_wildcard(self, value) -> bool:
         return self.config.FIELD_WILD_CARD in value
 
-    def _is_validatable(self, field: str, rule_name: str) -> bool:
-        return self._field_is_present(field) or self._rule_is_implicit(rule_name)
+    def _is_validatable(self, field: str, rule: rls.Rule) -> bool:
+        return self._field_is_present(field) or rule.implicit
 
     def _field_is_present(self, field: str) -> bool:
         return self._get_field_value(field) is not None
-
-    def _rule_is_implicit(self, rule_name: str) -> bool:
-        return rule_name in self._implicit_rules
 
     def _add_error(self, rule: rls.Rule):
         field = rule.message_fields.get(self.config.FIELD_KEY)
