@@ -106,7 +106,7 @@ class Validator:
     def validate(
         self,
         data: dict,
-        rules: Dict[str, Union[str, List[str, Callable]]],
+        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
         flat: bool = False,
     ) -> Union[dict, list]:
         ...
@@ -115,7 +115,7 @@ class Validator:
     def validate(
         self,
         data: object,
-        rules: Dict[str, Union[str, List[str, Callable]]],
+        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
         flat: bool = False,
     ) -> Union[dict, list]:
         ...
@@ -123,7 +123,7 @@ class Validator:
     def validate(
         self,
         data: Union[dict, object],
-        rules: Dict[str, Union[str, List[str, Callable]]],
+        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
         flat: bool = False,
     ) -> Union[dict, list]:
         """
