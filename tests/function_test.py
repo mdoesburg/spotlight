@@ -6,7 +6,7 @@ class FunctionTest(ValidatorTest):
         self.field = "test"
 
     def test_when_lambda_returns_error_expect_input_error(self):
-        rules = {"test": [lambda value, validator: "error"]}
+        rules = {"test": [lambda value, validator, **kwargs: "error"]}
         data = {"test": "some_data"}
         expected = "error"
 
@@ -15,8 +15,8 @@ class FunctionTest(ValidatorTest):
 
         self.assertEqual(errs[0], expected)
 
-    def test_when_lambda_returns_none_expect_input_error(self):
-        rules = {"test": [lambda value, validator: None]}
+    def test_when_lambda_returns_none_expect_no_error(self):
+        rules = {"test": [lambda value, validator, **kwargs: None]}
         data = {"test": "some_data"}
         expected = None
 
@@ -26,7 +26,7 @@ class FunctionTest(ValidatorTest):
         self.assertEqual(errs, expected)
 
     def test_when_function_returns_error_expect_input_error(self):
-        def validate(*_, **__):
+        def validate(**_):
             return "error"
 
         rules = {"test": [validate]}
@@ -38,8 +38,8 @@ class FunctionTest(ValidatorTest):
 
         self.assertEqual(errs[0], expected)
 
-    def test_when_function_returns_none_expect_input_error(self):
-        def validate(*_, **__):
+    def test_when_function_returns_none_expect_no_error(self):
+        def validate(**_):
             return None
 
         rules = {"test": [validate]}

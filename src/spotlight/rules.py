@@ -831,7 +831,9 @@ class _FunctionRule(Rule):
         self.validation_function = validation_function
 
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
-        self._result = self.validation_function(value, validator)
+        self._result = self.validation_function(
+            field=field, value=value, validator=validator
+        )
         self.message_fields = dict(field=field)
         return self._result is None
 
