@@ -104,20 +104,26 @@ class Validator:
 
     @overload
     def validate(
-        self, data: dict, rules: Dict[str, Union[str, list]], flat: bool = False
+        self,
+        data: dict,
+        rules: Dict[str, Union[str, List[str, Callable]]],
+        flat: bool = False,
     ) -> Union[dict, list]:
         ...
 
     @overload
     def validate(
-        self, data: object, rules: Dict[str, Union[str, list]], flat: bool = False
+        self,
+        data: object,
+        rules: Dict[str, Union[str, List[str, Callable]]],
+        flat: bool = False,
     ) -> Union[dict, list]:
         ...
 
     def validate(
         self,
         data: Union[dict, object],
-        rules: Dict[str, Union[str, list]],
+        rules: Dict[str, Union[str, List[str, Callable]]],
         flat: bool = False,
     ) -> Union[dict, list]:
         """
