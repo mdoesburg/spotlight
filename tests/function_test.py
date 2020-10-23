@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from .validator_test import ValidatorTest
 
 
@@ -50,3 +52,16 @@ class FunctionTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs, expected)
+
+    def test_when_using_function_validator_expect_correct_arguments(self):
+        mock = MagicMock(return_value=None)
+        value = "some_data"
+        rules = {"test": [mock]}
+        data = {"test": value}
+        expected = None
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+        mock.assert_called_with(field=self.field, value=value, validator=self.validator)
