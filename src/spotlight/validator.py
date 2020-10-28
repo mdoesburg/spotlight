@@ -267,13 +267,6 @@ class Validator:
         else:
             self.output[field] = [error]
 
-    @staticmethod
-    def _find_fields_in_error(error: str, regex: bool = False) -> list:
-        if regex:
-            return re.findall("{(.*?)}", error)
-
-        return [x[1] for x in Formatter().parse(error) if x[1] is not None]
-
     def _create_error(self, rule: rls.Rule):
         error = rule.message
         fields = rule.message_fields

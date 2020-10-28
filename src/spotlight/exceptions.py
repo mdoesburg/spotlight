@@ -31,13 +31,6 @@ class FieldValueNotFoundError(Exception):
     pass
 
 
-class InvalidRuleParameters(Exception):
-    def __init__(self):
-        super().__init__(
-            f"something went wrong parsing the rule parameters, make sure the format is correct"
-        )
-
-
 class InvalidDateTimeFormat(Exception):
     def __init__(self):
         super().__init__(f"invalid date time format")

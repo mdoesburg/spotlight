@@ -14,7 +14,7 @@ from .exceptions import (
     AttributeNotImplementedError,
     InvalidDateTimeFormat,
 )
-from .utils import missing, equal, empty, regex_match, get_field_value, missing_or_empty
+from .utils import missing, equal, empty, regex_match, missing_or_empty
 
 
 class Rule(ABC):
