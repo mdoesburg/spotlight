@@ -98,7 +98,7 @@ class RequiredWithoutRule(Rule):
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
         if missing_or_empty(data, field) and any(
-            missing_or_empty(data, o) for o in other_fields
+            [missing_or_empty(data, o) for o in other_fields]
         ):
             return False
 
@@ -122,7 +122,7 @@ class RequiredWithRule(Rule):
         self.message_fields = dict(field=field, other=", ".join(other_fields))
 
         if missing_or_empty(data, field) and any(
-            not missing_or_empty(data, o) for o in other_fields
+            [not missing_or_empty(data, o) for o in other_fields]
         ):
             return False
 
