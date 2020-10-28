@@ -142,3 +142,13 @@ class SizeTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_size_rule_with_set_expect_error(self):
+        rules = {"test": "size:1.1"}
+        data = {"test": set()}
+        expected = SIZE_ERROR.format(field=self.field, size=1.1)
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)

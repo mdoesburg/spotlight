@@ -97,3 +97,13 @@ class MinTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_min_rule_with_set_expect_error(self):
+        rules = {"test": "min:1.1"}
+        data = {"test": set()}
+        expected = MIN_ERROR.format(field=self.field, min=1.1)
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)

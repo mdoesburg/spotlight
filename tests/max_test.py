@@ -77,3 +77,13 @@ class MaxTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs, expected)
+
+    def test_max_rule_with_set_expect_error(self):
+        rules = {"test": "max:1.1"}
+        data = {"test": set()}
+        expected = MAX_ERROR.format(field=self.field, max=1.1)
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)

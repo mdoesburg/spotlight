@@ -47,3 +47,8 @@ class IpTest(ValidatorTest):
         valid_ip = self.validator.valid_ip(3232235777)
 
         self.assertEqual(valid_ip, True)
+
+    def test_valid_ip_with_list_expect_false(self):
+        valid_ip = self.validator.valid_ip([])
+
+        self.assertEqual(valid_ip, False)
