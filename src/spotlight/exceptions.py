@@ -33,4 +33,4 @@ class FieldValueNotFoundError(Exception):
 
 class InvalidDateTimeFormat(Exception):
     def __init__(self):
-        super().__init__(f"invalid date time format")
+        super().__init__("invalid date time format")
