@@ -5,6 +5,11 @@ from .exceptions import RuleNotFoundError, InvalidDataError, InvalidRulesError
 from .utils import get_field_value
 
 
+Data = Union[dict, object]
+ValidationFunction = Callable[..., Union[str, None]]
+Rules = Dict[str, Union[str, List[Union[str, ValidationFunction]]]]
+
+
 class Validator:
     """
     Creates an instance of the Validator class.
@@ -102,27 +107,18 @@ class Validator:
 
     @overload
     def validate(
-        self,
-        data: dict,
-        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
-        flat: bool = False,
+        self, data: dict, rules: Rules, flat: bool = False
     ) -> Union[dict, list]:
         ...
 
     @overload
     def validate(
-        self,
-        data: object,
-        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
-        flat: bool = False,
+        self, data: object, rules: Rules, flat: bool = False
     ) -> Union[dict, list]:
         ...
 
     def validate(
-        self,
-        data: Union[dict, object],
-        rules: Dict[str, Union[str, List[Union[str, Callable]]]],
-        flat: bool = False,
+        self, data: Data, rules: Rules, flat: bool = False
     ) -> Union[dict, list]:
         """
         Validate data with given rules.
