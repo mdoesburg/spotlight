@@ -1,5 +1,3 @@
-import re
-from string import Formatter
 from typing import Union, List, overload, Tuple, Iterator, Dict, Any, Callable
 
 from . import rules as rls, config
