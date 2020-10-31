@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2.2.0
+### Features
+- Add support for better imports. For example, you can now do `from spotlight import Validator` instead of `from spotlight.validator import Validator`.
+
+### Internal
+- Increase test coverage to 100%
+
 ## 2.1.0
 ### Features
 - Add support for custom validation functions
