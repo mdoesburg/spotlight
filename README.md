@@ -3,7 +3,7 @@ Data validation for Python, inspired by the Laravel framework.
 
 ---
 
-**Documentation**: coming soon
+**Documentation**: <a href="https://mdoesburg.github.io/spotlight/" target="_blank">https://mdoesburg.github.io/spotlight/</a>
 
 **Source Code**: <a href="https://github.com/mdoesburg/spotlight" target="_blank">https://github.com/mdoesburg/spotlight</a>
 
