@@ -1,0 +1,22 @@
+site_name: Spotlight
+
+repo_name: mdoesburg/spotlight
+repo_url: https://github.com/mdoesburg/spotlight
+
+theme:
+  name: material
+
+markdown_extensions:
+  - markdown.extensions.codehilite:
+      guess_lang: false
+
+nav:
+  - Overview: index.md
+  - Usage:
+    - usage/validator.md
+    - usage/rules.md
+    - usage/available_rules.md
+    - usage/custom_errors.md
+    - usage/custom_rules.md
+  - plugins.md
+  - release_notes.md
