@@ -1,0 +1,10 @@
+[run]
+omit = tests/*
+branch = True
+
+[report]
+precision = 2
+exclude_lines = @overload
+
+[xml]
+output = coverage.xml
