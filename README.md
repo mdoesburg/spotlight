@@ -1,5 +1,13 @@
 # Spotlight
-Laravel style data validation for Python.
+Data validation for Python, inspired by the Laravel framework.
+
+---
+
+**Documentation**: coming soon
+
+**Source Code**: <a href="https://github.com/mdoesburg/spotlight" target="_blank">https://github.com/mdoesburg/spotlight</a>
+
+---
 
 ## Table of Contents
 * [Installation](#installation)
