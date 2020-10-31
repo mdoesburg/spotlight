@@ -2,7 +2,7 @@
 
 Data validation for Python, inspired by the Laravel framework.
 
-## Dependencies
+## Requirements
 * [Python 3.6+](https://www.python.org/)
 
 ## Installation
