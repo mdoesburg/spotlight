@@ -7,8 +7,13 @@ theme:
   name: material
 
 markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
   - markdown.extensions.codehilite:
       guess_lang: false
+  - toc:
+      permalink: true
 
 nav:
   - Overview: index.md
