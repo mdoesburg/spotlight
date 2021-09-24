@@ -31,6 +31,28 @@ class RequiredUnlessTest(ValidatorTest):
 
         self.assertEqual(errs, expected)
 
+    def test_nested_required_unless_rule_with_required_condition_expect_error(self):
+        data = {"test1": {"test1": "test2"}}
+        rules = {"test2": "required_unless:test1.test1,test"}
+        expected = REQUIRED_UNLESS_ERROR.format(
+            field=self.field, other="test1.test1", value=self.value
+        )
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)
+
+    def test_nested_required_unless_rule_with_not_required_condition_expect_no_error(self):
+        data = {"test1": {"test1": "test"}}
+        rules = {"test2": "required_unless:test1.test1,test"}
+        expected = None
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
     def test_required_unless_rule_with_missing_field_expect_error(self):
         data = {}
         rules = {"test2": "required_unless:test1,test"}
