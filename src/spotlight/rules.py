@@ -14,7 +14,7 @@ from .exceptions import (
     AttributeNotImplementedError,
     InvalidDateTimeFormat,
 )
-from .utils import missing, equal, empty, regex_match, missing_or_empty
+from .utils import missing, equal, empty, regex_match, missing_or_empty, get_field_value
 
 
 class Rule(ABC):
@@ -143,7 +143,7 @@ class RequiredIfRule(Rule):
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         other, val = parameters
         data = validator.data
-        other_val = data.get(other)
+        other_val = get_field_value(data=data, field=other)
         self.message_fields = dict(field=field, other=other, value=val)
 
         if missing_or_empty(data, field) and equal(val, other_val):
@@ -166,7 +166,7 @@ class RequiredUnlessRule(Rule):
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         other, val = parameters
         data = validator.data
-        other_val = data.get(other)
+        other_val = get_field_value(data=data, field=other)
         self.message_fields = dict(field=field, other=other, value=val)
 
         if missing_or_empty(data, field) and not equal(val, other_val):

@@ -107,6 +107,28 @@ class RequiredIfTest(ValidatorTest):
 
         self.assertEqual(errs[0], expected)
 
+    def test_required_if_rule_with_nested_integer_expect_no_error(self):
+        data = {"test1": {"test1": 1}, "test2": "I am required"}
+        rules = {"test2": "required_if:test1.test1,1"}
+        expected = None
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
+    def test_required_if_rule_with_nested_integer_expect_error(self):
+        data = {"test1": {"test1": 1}}
+        rules = {"test2": "required_if:test1.test1,1"}
+        expected = REQUIRED_IF_ERROR.format(
+            field=self.field, other="test1.test1", value=1
+        )
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs[0], expected)
+
     def test_required_if_rule_with_field_present_but_none_expect_error(self):
         field = "test2"
         rules = {"test1": "string", "test2": "required_if:test1,some_value"}
