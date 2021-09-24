@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.2.1
+### Fixes
+- Nested values now get resolved properly for the `required_if` and `required_unless` rule
+
 ## 2.2.0
 ### Features
 - Add support for better imports. For example, you can now do `from spotlight import Validator` instead of `from spotlight.validator import Validator`.
