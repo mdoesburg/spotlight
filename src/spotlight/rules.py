@@ -370,8 +370,7 @@ class MaxRule(Rule):
 
 class InRule(Rule):
     """
-        In: The field under validation must be included in the given list
-        of values
+    In: The field under validation must be included in the given list of values
     """
 
     name = "in"
