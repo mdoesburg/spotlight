@@ -741,6 +741,28 @@ class BeforeRule(Rule):
         return errors.BEFORE_ERROR
 
 
+class BeforeOrEqualRule(BeforeRule):
+    """Date/time that must be before or equal to another date/time."""
+
+    name = "before_or_equal"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        supplied_field_or_format = parameters[0] if parameters else None
+        before_or_equal_date, before_or_equal_format = self.date_and_format(
+            field, field, validator
+        )
+        after_or_equal_date, after_or_equal_format = self.date_and_format(
+            field, supplied_field_or_format, validator
+        )
+        self.message_fields = dict(field=field, other=supplied_field_or_format)
+
+        return before_or_equal_date <= after_or_equal_date
+
+    @property
+    def message(self) -> str:
+        return errors.BEFORE_OR_EQUAL_ERROR
+
+
 class AfterRule(Rule):
     """Date/time that must occur after another date/time."""
 
@@ -759,6 +781,28 @@ class AfterRule(Rule):
     @property
     def message(self) -> str:
         return errors.AFTER_ERROR
+
+
+class AfterOrEqualRule(AfterRule):
+    """Date/time that must be after or equal to another date/time."""
+
+    name = "after_or_equal"
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        supplied_field_or_format = parameters[0] if parameters else None
+        after_or_equal_date, after_or_equal_format = BeforeRule.date_and_format(
+            field, field, validator
+        )
+        before_or_equal_date, before_or_equal_format = BeforeRule.date_and_format(
+            field, supplied_field_or_format, validator
+        )
+        self.message_fields = dict(field=field, other=supplied_field_or_format)
+
+        return after_or_equal_date >= before_or_equal_date
+
+    @property
+    def message(self) -> str:
+        return errors.AFTER_OR_EQUAL_ERROR
 
 
 class SizeRule(Rule):

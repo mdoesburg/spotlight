@@ -61,9 +61,11 @@ class Validator:
     def _default_rules() -> List[rls.Rule]:
         return [
             rls.AcceptedRule(),
+            rls.AfterOrEqualRule(),
             rls.AfterRule(),
             rls.AlphaNumRule(),
             rls.AlphaNumSpaceRule(),
+            rls.BeforeOrEqualRule(),
             rls.BeforeRule(),
             rls.BooleanRule(),
             rls.DateTimeRule(),

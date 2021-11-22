@@ -22,6 +22,9 @@ Instead of passing a date/time string to be evaluated by the `strptime` Python f
 after:some_field
 ```
 
+## after_or_equal
+The field under validation must be a value after or equal to a given date/time. For more information, see the [after](#after) rule.
+
 ## alpha_num
 The field under validation must be entirely alpha-numeric characters.
 ```
@@ -49,6 +52,9 @@ Instead of passing a date/time string to be evaluated by the `strptime` Python f
 ```
 before:some_field
 ```
+
+## before_or_equal
+The field under validation must be a value before or equal to a given date/time. For more information, see the [before](#before) rule.
 
 ## boolean
 The field under validation must be a boolean.
