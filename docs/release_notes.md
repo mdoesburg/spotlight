@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2.3.0
+### Features
+- Add after_or_equal rule
+- Add before_or_equal rule
+
 ## 2.2.1
 ### Fixes
 - Nested values now get resolved properly for the `required_if` and `required_unless` rule
