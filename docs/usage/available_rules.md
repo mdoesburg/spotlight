@@ -43,7 +43,7 @@ The field under validation must be a value before a given date/time. For more de
 before:2019-12-31 12:00:00
 ```
 
-If the before rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the after rule as well:
+If the before rule is accompanied by the date_time rule, and a non default format is specified, the specified format will be assumed for the before rule as well:
 ```
 date_time:%H:%M:%S|before:12:00:00
 ```
