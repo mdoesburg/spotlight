@@ -10,7 +10,7 @@ You can write rules as single pipe delimited strings:
 
 ```python
 rules = {
-    "id": "required|int",
+    "id": "required|integer",
     "email": "required|email",
     "first_name": "required|string",
     "last_name": "required|string",
@@ -24,7 +24,7 @@ Alternatively to the string notation, rules can be specified as lists of rules:
 
 ```python
 rules = {
-    "id": ["required", "int"],
+    "id": ["required", "integer"],
     "email": ["required", "email"],
     "first_name": ["required", "string"],
     "last_name": ["required", "string"],

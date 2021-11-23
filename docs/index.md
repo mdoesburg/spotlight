@@ -24,7 +24,7 @@ from spotlight import Validator
 
 
 rules = {
-    "id": "required|int",
+    "id": "required|integer",
     "email": "required|email",
     "first_name": "required|string",
     "last_name": "required|string",
@@ -55,7 +55,7 @@ Alternatively, validation rules may be specified as lists of rules instead of a 
 
 ```python
 rules = {
-    "id": ["required", "int"],
+    "id": ["required", "integer"],
     "email": ["required", "email"],
     "first_name": ["required", "string"],
     "last_name": ["required", "string"],
