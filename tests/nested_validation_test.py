@@ -276,3 +276,12 @@ class NestedValidationTest(ValidatorTest):
         errors = self.validator.validate(data, rules)
 
         self.assertEqual(errors, expected)
+
+    def test_nested_validation_with_date_and_format_field_lookup_expect_no_error(self):
+        rules = {"data.field": "date_time:%d-%m-%Y|before_or_equal:05-12-1980"}
+        data = {"data": {"field": "04-12-1980"}}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)

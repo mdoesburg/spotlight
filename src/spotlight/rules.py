@@ -708,7 +708,7 @@ class BeforeRule(Rule):
             after_format = BeforeRule.date_time_field_format(
                 field_or_date_time, validator
             )
-            value = validator.data.get(field_or_date_time)
+            value = get_field_value(data=validator.data, field=field_or_date_time or "")
 
             if isinstance(value, datetime):
                 after_date = value
