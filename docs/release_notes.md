@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.3.1
+### Fixes
+- Fix nested field lookup when determining date and format
+
 ## 2.3.0
 ### Features
 - Add after_or_equal rule
