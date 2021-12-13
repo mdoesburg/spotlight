@@ -226,7 +226,12 @@ class Validator:
         if self.config.RULE_PARAM_DELIMITER not in rule:
             return []
 
-        return self._split_rule(rule)[1].split(self.config.RULE_PARAMS_DELIMITER)
+        rule_name, parameters = self._split_rule(rule)
+
+        if rule_name in [rls.RegexRule.name]:
+            return [parameters]
+
+        return parameters.split(self.config.RULE_PARAMS_DELIMITER)
 
     def _split_rule(self, rule: str) -> List[str]:
         return rule.split(self.config.RULE_PARAM_DELIMITER, 1)

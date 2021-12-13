@@ -40,7 +40,7 @@ class RegexTest(ValidatorTest):
         self.assertEqual(errs, expected)
 
     def test_regex_rule_with_regex_containing_pipe_with_valid_value_expect_no_error(
-        self
+        self,
     ):
         regex = "a|b"
         rules = {"test": ["string", f"regex:{regex}"]}
@@ -95,3 +95,16 @@ class RegexTest(ValidatorTest):
         for i, (field, err) in enumerate(errors.items()):
             expected = REGEX_ERROR.format(field=field, regex=regex[i])
             self.assertEqual(err[0], expected)
+
+    def test_regex_rule_with_regex_including_comma(self):
+        rules = {
+            "test1": "regex:^[a-z]{2,4}$",
+        }
+        data = {
+            "test1": "test",
+        }
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
