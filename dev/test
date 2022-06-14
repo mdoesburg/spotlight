@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 # Delete all python cache files
 find . -name '*.pyc' -delete
