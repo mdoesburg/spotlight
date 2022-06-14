@@ -1,6 +1,10 @@
 # Spotlight
 Data validation for Python, inspired by the Laravel framework.
 
+<a href="https://codecov.io/gh/mdoesburg/spotlight" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/mdoesburg/spotlight" alt="Coverage">
+</a>
+
 ---
 
 **Documentation**: <a href="https://mdoesburg.github.io/spotlight/" target="_blank">https://mdoesburg.github.io/spotlight/</a>
