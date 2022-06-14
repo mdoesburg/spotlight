@@ -16,7 +16,7 @@ jobs:
       - name: Install packages
         run: pipenv install --dev
       - name: Run tests & collect coverage
-        run: ./dev/test
+        run: pipenv run dev/test
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
   deploy:
