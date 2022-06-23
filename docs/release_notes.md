@@ -1,5 +1,9 @@
 # Release Notes
 
+## 3.0.0
+### Breaking Changes
+- Add support for date objects. Python date objects will now pass `date_time` validation and can be used in all date rules.
+
 ## 2.3.3
 ### Fixes
 - Fix rule split bug when using date rules in combination with list notation 
