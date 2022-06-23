@@ -368,7 +368,12 @@ class Validator:
         return get_field_value(self.data, field)
 
     def field_rules(self, field: str) -> List[str]:
-        return self._split_rules(self.rules.get(field))
+        rules = self.rules.get(field)
+
+        if isinstance(rules, list):
+            return rules
+
+        return self._split_rules(rules)
 
     @staticmethod
     def valid_email(value: Any) -> bool:
