@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from src.spotlight import config
 from src.spotlight.errors import DATE_TIME_ERROR
@@ -208,3 +208,20 @@ class DateTimeTest(ValidatorTest):
         for value, date_time_format in zip(values, date_time_formats):
             actual = self.validator.valid_date_time(value, date_time_format)
             self.assertEqual(actual, False)
+
+    def test_date_time_rule_with_date_objects_expect_no_errors(self):
+        d1 = date(2019, 5, 16)
+        d2 = date(2019, 5, 17)
+        d3 = date(2020, 9, 22)
+
+        rules = {
+            "date1": "date_time",
+            "date2": "date_time",
+            "date3": "date_time",
+        }
+        data = {"date1": d1, "date2": d2, "date3": d3}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)

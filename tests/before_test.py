@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import pytest
 
@@ -139,7 +139,9 @@ class BeforeTest(ValidatorTest):
 
         self.assertEqual(errors, expected)
 
-    def test_before_rule_with_python_datetime_object_and_invalid_time_value_expect_error(self):
+    def test_before_rule_with_python_datetime_object_and_invalid_time_value_expect_error(
+        self,
+    ):
         time = datetime.utcnow()
         field = "start_time"
         rules = {"start_time": "date_time|before:end_time", "end_time": "date_time"}
@@ -150,3 +152,80 @@ class BeforeTest(ValidatorTest):
         errs = errors.get(field)
 
         self.assertEqual(errs[0], expected)
+
+    def test_before_rule_with_python_date_objects_expect_no_error(self):
+        rules = {"start_date": "date_time|before:end_date", "end_date": "date_time"}
+        data = {"start_date": date(2022, 2, 1), "end_date": date(2022, 2, 2)}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_rule_with_python_date_objects_expect_error(self):
+        rules = {"start_date": "date_time|before:end_date", "end_date": "date_time"}
+        data = {"start_date": date(2022, 2, 2), "end_date": date(2022, 2, 1)}
+        expected = {
+            "start_date": [BEFORE_ERROR.format(field="start_date", other="end_date")]
+        }
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_rule_with_python_date_and_datetime_objects_expect_no_error(self):
+        rules = {
+            "start_date1": "date_time|before:end_date1",
+            "end_date1": "date_time",
+            "start_date2": "date_time|before:end_date2",
+            "end_date2": "date_time",
+        }
+        data = {
+            "start_date1": date(2022, 2, 1),
+            "end_date1": datetime.strptime(
+                "2022-02-02 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "start_date2": datetime.strptime(
+                "2022-02-01 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "end_date2": date(2022, 2, 2),
+        }
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_rule_with_python_date_and_datetime_objects_expect_error(self):
+        rules = {
+            "start_date1": "date_time|before:end_date1",
+            "end_date1": "date_time",
+            "start_date2": "date_time|before:end_date2",
+            "end_date2": "date_time",
+        }
+        data = {
+            "start_date1": date(2022, 2, 1),
+            "end_date1": datetime.strptime(
+                "2022-02-01 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "start_date2": datetime.strptime(
+                "2022-02-01 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "end_date2": date(2022, 2, 1),
+        }
+        expected = {
+            "start_date1": [
+                BEFORE_ERROR.format(field="start_date1", other="end_date1")
+            ],
+            "start_date2": [
+                BEFORE_ERROR.format(field="start_date2", other="end_date2")
+            ],
+        }
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)

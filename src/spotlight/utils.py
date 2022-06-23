@@ -1,4 +1,5 @@
-from typing import Pattern, AnyStr, Any
+from datetime import datetime, date
+from typing import Pattern, AnyStr, Any, Union, Tuple
 
 from . import config
 from .exceptions import FieldValueNotFoundError
@@ -77,3 +78,21 @@ def missing_or_empty(data, field) -> bool:
     value = get_field_value(data, field)
 
     return missing(data, field) or empty(value)
+
+
+def get_comparable_dates(
+    date1: Union[datetime, date],
+    date2: Union[datetime, date],
+) -> Union[Tuple[datetime, datetime], Tuple[date, date]]:
+    def is_date_time(value: Union[datetime, date]) -> bool:
+        return isinstance(value, datetime)
+
+    def is_date(value: Union[datetime, date]) -> bool:
+        return isinstance(value, date) and not isinstance(value, datetime)
+
+    if is_date_time(date1) and is_date(date2):
+        return date1.date(), date2
+    elif is_date(date1) and is_date_time(date2):
+        return date1, date2.date()
+
+    return date1, date2

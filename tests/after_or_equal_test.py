@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from src.spotlight.errors import AFTER_OR_EQUAL_ERROR
 from .validator_test import ValidatorTest
 
@@ -39,6 +41,102 @@ class AfterOrEqualTest(ValidatorTest):
         }
         data = {"dt1": "08/24/2019 16:47:00"}
         expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_after_or_equal_rule_with_python_date_objects_expect_no_error(self):
+        rules = {
+            "start_date1": "date_time",
+            "end_date1": "date_time|after_or_equal:start_date1",
+            "start_date2": "date_time",
+            "end_date2": "date_time|after_or_equal:start_date2",
+        }
+        data = {
+            "start_date1": date(2022, 2, 1),
+            "end_date1": date(2022, 2, 2),
+            "start_date2": date(2022, 2, 1),
+            "end_date2": date(2022, 2, 1),
+        }
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_after_or_equal_rule_with_python_date_objects_expect_error(self):
+        rules = {
+            "start_date": "date_time",
+            "end_date": "date_time|after_or_equal:start_date",
+        }
+        data = {"start_date": date(2022, 2, 2), "end_date": date(2022, 2, 1)}
+        expected = {
+            "end_date": [
+                AFTER_OR_EQUAL_ERROR.format(field="end_date", other="start_date")
+            ]
+        }
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_after_or_equal_rule_with_python_date_and_datetime_objects_expect_no_error(
+        self,
+    ):
+        rules = {
+            "start_date1": "date_time",
+            "end_date1": "date_time|after_or_equal:start_date1",
+            "start_date2": "date_time",
+            "end_date2": "date_time|after_or_equal:start_date2",
+        }
+        data = {
+            "start_date1": date(2022, 2, 1),
+            "end_date1": datetime.strptime(
+                "2022-02-02 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "start_date2": datetime.strptime(
+                "2022-02-01 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "end_date2": date(2022, 2, 1),
+        }
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_after_or_equal_rule_with_python_date_and_datetime_objects_expect_error(
+        self,
+    ):
+        rules = {
+            "start_date1": "date_time",
+            "end_date1": "date_time|after_or_equal:start_date1",
+            "start_date2": "date_time",
+            "end_date2": "date_time|after_or_equal:start_date2",
+        }
+        data = {
+            "start_date1": date(2022, 2, 1),
+            "end_date1": datetime.strptime(
+                "2022-01-31 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "start_date2": datetime.strptime(
+                "2022-02-01 12:30:00",
+                self.validator.config.DEFAULT_DATE_TIME_FORMAT,
+            ),
+            "end_date2": date(2022, 1, 31),
+        }
+        expected = {
+            "end_date1": [
+                AFTER_OR_EQUAL_ERROR.format(field="end_date1", other="start_date1")
+            ],
+            "end_date2": [
+                AFTER_OR_EQUAL_ERROR.format(field="end_date2", other="start_date2")
+            ],
+        }
 
         errors = self.validator.validate(data, rules)
 

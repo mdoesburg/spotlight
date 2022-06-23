@@ -1,10 +1,10 @@
 import ipaddress
 import json
 import re
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from json import JSONDecodeError
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Union
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -14,7 +14,15 @@ from .exceptions import (
     AttributeNotImplementedError,
     InvalidDateTimeFormat,
 )
-from .utils import missing, equal, empty, regex_match, missing_or_empty, get_field_value
+from .utils import (
+    missing,
+    equal,
+    empty,
+    regex_match,
+    missing_or_empty,
+    get_field_value,
+    get_comparable_dates,
+)
 
 
 class Rule(ABC):
@@ -664,7 +672,7 @@ class DateTimeRule(Rule):
 
     @staticmethod
     def valid_date_time(value: Any, date_time_format: str = None) -> bool:
-        if isinstance(value, datetime):
+        if isinstance(value, datetime) or isinstance(value, date):
             return True
 
         if not date_time_format and not regex_match(DateTimeRule._regex, value):
@@ -689,6 +697,7 @@ class BeforeRule(Rule):
         after_date, after_format = self.date_and_format(
             field, supplied_field_or_format, validator
         )
+        before_date, after_date = get_comparable_dates(before_date, after_date)
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
         return before_date < after_date
@@ -696,7 +705,7 @@ class BeforeRule(Rule):
     @staticmethod
     def date_and_format(
         field: str, field_or_date_time: Any, validator
-    ) -> Tuple[datetime, str]:
+    ) -> Tuple[Union[datetime, date], str]:
         after_format = DateTimeRule.default_format
 
         # First try the value as a datetime string with the default format. If
@@ -710,7 +719,7 @@ class BeforeRule(Rule):
             )
             value = get_field_value(data=validator.data, field=field_or_date_time or "")
 
-            if isinstance(value, datetime):
+            if isinstance(value, datetime) or isinstance(value, date):
                 after_date = value
             else:
                 try:
@@ -753,6 +762,9 @@ class BeforeOrEqualRule(BeforeRule):
         after_or_equal_date, after_or_equal_format = self.date_and_format(
             field, supplied_field_or_format, validator
         )
+        before_or_equal_date, after_or_equal_date = get_comparable_dates(
+            before_or_equal_date, after_or_equal_date
+        )
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
         return before_or_equal_date <= after_or_equal_date
@@ -773,6 +785,7 @@ class AfterRule(Rule):
         before_date, before_format = BeforeRule.date_and_format(
             field, supplied_field_or_format, validator
         )
+        after_date, before_date = get_comparable_dates(after_date, before_date)
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
         return after_date > before_date
@@ -794,6 +807,9 @@ class AfterOrEqualRule(AfterRule):
         )
         before_or_equal_date, before_or_equal_format = BeforeRule.date_and_format(
             field, supplied_field_or_format, validator
+        )
+        after_or_equal_date, before_or_equal_date = get_comparable_dates(
+            after_or_equal_date, before_or_equal_date
         )
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
