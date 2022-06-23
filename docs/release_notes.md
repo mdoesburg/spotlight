@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.3.3
+### Fixes
+- Fix rule split bug when using date rules in combination with list notation 
+
 ## 2.3.2
 ### Fixes
 - Exclude `regex` rule from param split. This fixes the `regex` rule for regular expressions that contain commas.
