@@ -1,5 +1,9 @@
 # Release Notes
 
+## 3.0.1
+### Fixes
+- The `after`, `after_or_equal`, `before`, and `before_or_equal` rules no longer raise a date time error when the dependent field/value is missing or incorrect.
+
 ## 3.0.0
 ### Breaking Changes
 - Add support for date objects. Python date objects will now pass `date_time` validation and can be used in all date rules.

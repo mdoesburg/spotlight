@@ -143,3 +143,33 @@ class BeforeOrEqualTest(ValidatorTest):
         errors = self.validator.validate(data, rules)
 
         self.assertEqual(errors, expected)
+
+    def test_before_or_equal_rule_with_missing_field_expect_no_error(self):
+        rules = {
+            "start": [
+                "date_time:%Y-%m-%d",
+            ],
+            "end": [
+                "required",
+                "date_time:%Y-%m-%d",
+                "before_or_equal:start",
+            ],
+        }
+        data = {
+            "start": None,
+            "end": date(2022, 1, 31),
+        }
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)
+
+    def test_before_or_equal_rule_with_invalid_value_expect_no_error(self):
+        rules = {"start_time": "date_time|before_or_equal:12:00:00"}
+        data = {"start_time": "2019-06-01 12:00:01"}
+        expected = {}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertEqual(errors, expected)

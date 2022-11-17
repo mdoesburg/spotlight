@@ -12,7 +12,6 @@ from . import errors, config
 from .exceptions import (
     RuleNameAlreadyExistsError,
     AttributeNotImplementedError,
-    InvalidDateTimeFormat,
 )
 from .utils import (
     missing,
@@ -700,12 +699,12 @@ class BeforeRule(Rule):
         before_date, after_date = get_comparable_dates(before_date, after_date)
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
-        return before_date < after_date
+        return not after_date or before_date < after_date
 
     @staticmethod
     def date_and_format(
         field: str, field_or_date_time: Any, validator
-    ) -> Tuple[Union[datetime, date], str]:
+    ) -> Tuple[Union[datetime, date, None], str]:
         after_format = DateTimeRule.default_format
 
         # First try the value as a datetime string with the default format. If
@@ -729,7 +728,9 @@ class BeforeRule(Rule):
                     try:
                         after_date = datetime.strptime(field_or_date_time, after_format)
                     except (ValueError, TypeError):
-                        raise InvalidDateTimeFormat
+                        # Silently fail because the field is missing or the value
+                        # is not a correct datetime
+                        after_date = None
 
         return after_date, after_format
 
@@ -767,7 +768,7 @@ class BeforeOrEqualRule(BeforeRule):
         )
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
-        return before_or_equal_date <= after_or_equal_date
+        return not after_or_equal_date or before_or_equal_date <= after_or_equal_date
 
     @property
     def message(self) -> str:
@@ -788,7 +789,7 @@ class AfterRule(Rule):
         after_date, before_date = get_comparable_dates(after_date, before_date)
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
-        return after_date > before_date
+        return not before_date or after_date > before_date
 
     @property
     def message(self) -> str:
@@ -813,7 +814,7 @@ class AfterOrEqualRule(AfterRule):
         )
         self.message_fields = dict(field=field, other=supplied_field_or_format)
 
-        return after_or_equal_date >= before_or_equal_date
+        return not before_or_equal_date or after_or_equal_date >= before_or_equal_date
 
     @property
     def message(self) -> str:

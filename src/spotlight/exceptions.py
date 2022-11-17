@@ -29,8 +29,3 @@ class AttributeNotImplementedError(Exception):
 
 class FieldValueNotFoundError(Exception):
     pass
-
-
-class InvalidDateTimeFormat(Exception):
-    def __init__(self):
-        super().__init__("invalid date time format")
