@@ -890,6 +890,11 @@ class _FunctionRule(Rule):
         self._result = None
         self.validation_function = validation_function
 
+        if hasattr(validation_function, "implicit"):
+            self.implicit = validation_function.implicit
+        if hasattr(validation_function, "stop"):
+            self.stop = validation_function.stop
+
     def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
         self._result = self.validation_function(
             field=field, value=value, validator=validator
