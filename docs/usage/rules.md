@@ -71,6 +71,18 @@ rules = {
 }
 ```
 
+!!! tip
+    Just like [custom rules](custom_rules.md), if needed, you can add [implicit](custom_rules.md#implicit) and [stop](custom_rules.md#stop) flags to your rule function:
+    
+    ```python
+    def custom_validate(value, **kwargs):
+        if not value:
+            return  "Value is required!"
+
+    custom_validate.implicit = True
+    custom_validate.stop = True
+    ```
+
 ### Provided Arguments
 
 Both lambda expressions and functions will have access to the following keyword arguments:
