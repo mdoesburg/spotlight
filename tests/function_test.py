@@ -65,3 +65,50 @@ class FunctionTest(ValidatorTest):
 
         self.assertEqual(errs, expected)
         mock.assert_called_with(field=self.field, value=value, validator=self.validator)
+
+    def test_function_with_implicit_flag_expect_error(self):
+        def implicit_rule(value, **_):
+            if not value:
+                return "Required!"
+
+        implicit_rule.implicit = True
+
+        rules = {"test": [implicit_rule]}
+        data = {}
+        expected = ["Required!"]
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
+    def test_function_with_multiple_non_stopping_implicit_rules_expect_errors(self):
+        def implicit_rule(**_):
+            return "Error!"
+
+        implicit_rule.implicit = True
+
+        rules = {"test": [implicit_rule, implicit_rule]}
+        data = {}
+        expected = ["Error!", "Error!"]
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)
+
+    def test_function_with_implicit_and_stop_flag_expect_error(self):
+        def implicit_rule(**_):
+            return "Error!"
+
+        implicit_rule.implicit = True
+        implicit_rule.stop = True
+
+        rules = {"test": [implicit_rule, implicit_rule]}
+        data = {}
+        expected = ["Error!"]
+
+        errors = self.validator.validate(data, rules)
+        errs = errors.get(self.field)
+
+        self.assertEqual(errs, expected)

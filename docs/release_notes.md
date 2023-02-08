@@ -1,5 +1,9 @@
 # Release Notes
 
+## 3.1.0
+### Features
+- Add `implicit` and `stop` flag support to function rules.
+
 ## 3.0.1
 ### Fixes
 - The `after`, `after_or_equal`, `before`, and `before_or_equal` rules no longer raise a date time error when the dependent field/value is missing or incorrect.
