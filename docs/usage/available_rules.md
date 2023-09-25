@@ -157,6 +157,19 @@ The field under validation can't be present if the other specified field is pres
 not_with:other
 ```
 
+## prohibited
+
+The field under validation must be missing or empty. A field is considered "empty" if one of the following conditions are true:
+
+* The value is _None_.
+* The value is an empty string.
+* The value is an empty list.
+* The value is an empty dict.
+
+```
+prohibited
+```
+
 ## regex
 
 The field under validation must match the given regular expression. Internally, this rule uses the Python re.fullmatch() function.
