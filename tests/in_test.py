@@ -84,3 +84,19 @@ class InTest(ValidatorTest):
         errs = errors.get(self.field)
 
         self.assertEqual(errs, expected)
+
+    def test_in_rule_with_tuple_expect_no_error(self):
+        data = {"test": "value, with comma"}
+        rules = {"test": [("in", ["value, with comma", "other value"])]}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertFalse(errors)
+
+    def test_in_rule_with_list_no_expect_error(self):
+        data = {"test": "value, with comma"}
+        rules = {"test": [["in", ["value, with comma", "other value"]]]}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertFalse(errors)

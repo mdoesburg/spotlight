@@ -207,8 +207,11 @@ class Validator:
                 yield rls._FunctionRule(rule), []
                 continue
 
-            rule_name = self._rule_name(rule)
-            rule_parameters = self._rule_parameters(rule)
+            if isinstance(rule, tuple) or isinstance(rule, list):
+                rule_name, rule_parameters = rule
+            else:
+                rule_name = self._rule_name(rule)
+                rule_parameters = self._rule_parameters(rule)
 
             if not self._rule_exists(rule_name):
                 raise RuleNotFoundError(rule_name)
