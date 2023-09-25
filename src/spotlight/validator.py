@@ -83,6 +83,7 @@ class Validator:
             rls.MaxRule(),
             rls.MinRule(),
             rls.NotWithRule(),
+            rls.ProhibitedRule(),
             rls.RegexRule(),
             rls.RequiredIfRule(),
             rls.RequiredRule(),
