@@ -105,3 +105,19 @@ class RequiredWithTest(ValidatorTest):
         errs = errors.get(field)
 
         self.assertEqual(errs, expected)
+
+    def test_required_with_rule_with_tuple_no_error(self):
+        data = {"field,with,commas": "test", "test": "data"}
+        rules = {"test": [("required_with", ["field,with,commas"])]}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertFalse(errors)
+
+    def test_in_rule_with_list_no_error(self):
+        data = {"field,with,commas": "test", "test": "data"}
+        rules = {"test": [["required_with", ["field,with,commas"]]]}
+
+        errors = self.validator.validate(data, rules)
+
+        self.assertFalse(errors)

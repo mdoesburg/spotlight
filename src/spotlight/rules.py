@@ -910,3 +910,20 @@ class _FunctionRule(Rule):
     @property
     def name(self):
         return self.__class__.__name__
+
+
+class ProhibitedRule(Rule):
+    """Prohibited field"""
+
+    name = "prohibited"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        self.message_fields = dict(field=field)
+
+        return missing(validator.data, field) or empty(value)
+
+    @property
+    def message(self) -> str:
+        return errors.PROHIBITED_ERROR

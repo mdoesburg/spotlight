@@ -1,5 +1,10 @@
 # Release Notes
 
+## 3.2.0
+### Features
+- Add support for defining a rule with parameters as a tuple or a list
+- Add `prohibited` rule
+
 ## 3.1.0
 ### Features
 - Add `implicit` and `stop` flag support to function rules.
