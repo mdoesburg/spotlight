@@ -170,6 +170,24 @@ The field under validation must be missing or empty. A field is considered "empt
 prohibited
 ```
 
+## prohibited_if
+The field under validation must be missing or empty if the other specified field equals a certain value.
+```
+prohibited_if:other,value
+```
+
+## prohibited_unless
+The field under validation must be missing or empty unless the other specified field equals a certain value.
+```
+prohibited_unless:other,value
+```
+
+## prohibited_with
+The field under validation must be missing or empty only if any of the other specified fields are present.
+```
+prohibited_with:field1,field2,...
+```
+
 ## regex
 
 The field under validation must match the given regular expression. Internally, this rule uses the Python re.fullmatch() function.
