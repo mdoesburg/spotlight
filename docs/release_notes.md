@@ -1,5 +1,11 @@
 # Release Notes
 
+## 3.3.0
+### Features
+- Add `prohibited_if` rule
+- Add `prohibited_unless` rule
+- Add `prohibited_with` rule
+
 ## 3.2.0
 ### Features
 - Add support for defining a rule with parameters as a tuple or a list
