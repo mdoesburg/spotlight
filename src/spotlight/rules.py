@@ -927,3 +927,64 @@ class ProhibitedRule(Rule):
     @property
     def message(self) -> str:
         return errors.PROHIBITED_ERROR
+
+
+class ProhibitedIfRule(Rule):
+    """Prohibited if other field equals certain value"""
+
+    name = "prohibited_if"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other, val = parameters
+        data = validator.data
+        other_val = get_field_value(data=data, field=other)
+        self.message_fields = dict(field=field, other=other, value=val)
+
+        return missing_or_empty(data, field) or not equal(val, other_val)
+
+    @property
+    def message(self) -> str:
+        return errors.PROHIBITED_IF_ERROR
+
+
+class ProhibitedUnlessRule(Rule):
+    """Prohibited unless other field equals certain value"""
+
+    name = "prohibited_unless"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other, val = parameters
+        data = validator.data
+        other_val = get_field_value(data=data, field=other)
+        self.message_fields = dict(field=field, other=other, value=val)
+
+        return missing_or_empty(data, field) or equal(val, other_val)
+
+    @property
+    def message(self) -> str:
+        return errors.PROHIBITED_UNLESS_ERROR
+
+
+class ProhibitedWithRule(Rule):
+    """Prohibited with other field"""
+
+    name = "prohibited_with"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other_fields = parameters
+        data = validator.data
+        self.message_fields = dict(field=field, other=", ".join(other_fields))
+
+        return missing_or_empty(data, field) or not any(
+            [not missing_or_empty(data, o) for o in other_fields]
+        )
+
+    @property
+    def message(self) -> str:
+        return errors.PROHIBITED_WITH_ERROR
