@@ -1,5 +1,9 @@
 # Release Notes
 
+## 3.4.0
+### Features
+- Add `prohibited_without` rule
+
 ## 3.3.0
 ### Features
 - Add `prohibited_if` rule
