@@ -86,6 +86,7 @@ class Validator:
             rls.ProhibitedIfRule(),
             rls.ProhibitedRule(),
             rls.ProhibitedUnlessRule(),
+            rls.ProhibitedWithoutRule(),
             rls.ProhibitedWithRule(),
             rls.RegexRule(),
             rls.RequiredIfRule(),

@@ -969,6 +969,27 @@ class ProhibitedUnlessRule(Rule):
         return errors.PROHIBITED_UNLESS_ERROR
 
 
+class ProhibitedWithoutRule(Rule):
+    """Prohibited if other field is not present"""
+
+    name = "prohibited_without"
+    implicit = True
+    stop = True
+
+    def passes(self, field: str, value: Any, parameters: List[str], validator) -> bool:
+        other_fields = parameters
+        data = validator.data
+        self.message_fields = dict(field=field, other=", ".join(other_fields))
+
+        return missing_or_empty(data, field) or not any(
+            [missing_or_empty(data, o) for o in other_fields]
+        )
+
+    @property
+    def message(self) -> str:
+        return errors.PROHIBITED_WITHOUT_ERROR
+
+
 class ProhibitedWithRule(Rule):
     """Prohibited with other field"""
 
