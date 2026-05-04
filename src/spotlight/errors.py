@@ -28,6 +28,7 @@ NOT_WITH_ERROR = "The {field} field can't be present when the {other} field is p
 PROHIBITED_ERROR = "The {field} field is prohibited."
 PROHIBITED_IF_ERROR = "The {field} field is prohibited if the {other} field equals {value}."
 PROHIBITED_UNLESS_ERROR = "The {field} field is prohibited unless the {other} field equals {value}."
+PROHIBITED_WITHOUT_ERROR = "The {field} field is prohibited if any of the following fields are absent: {other}."
 PROHIBITED_WITH_ERROR = "The {field} field is prohibited if any of the following fields are present: {other}."
 REGEX_ERROR = "The {field} field does not match the regular expression: {regex}."
 REQUIRED_ERROR = "The {field} field is required."

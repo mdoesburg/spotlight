@@ -188,6 +188,12 @@ The field under validation must be missing or empty only if any of the other spe
 prohibited_with:field1,field2,...
 ```
 
+## prohibited_without
+The field under validation must be missing or empty only when any of the other specified fields are not present.
+```
+prohibited_without:field1,field2,...
+```
+
 ## regex
 
 The field under validation must match the given regular expression. Internally, this rule uses the Python re.fullmatch() function.
